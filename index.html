@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>TOEIC Part 5/6/7 トレーナー</title>
+  <meta name="description" content="TOEIC Part 5/6/7 対応演習アプリ。間隔反復(SRS)、AI問題生成・弱点分析、PWAオフライン対応。">
+  <meta name="theme-color" content="#060b14">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="toeic_icon.png">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+  <!-- SVG グラデーション -->
+  <svg width="0" height="0" style="position:absolute;overflow:hidden">
+    <defs>
+      <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%"   stop-color="#3b82f6"/>
+        <stop offset="100%" stop-color="#a855f7"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- ====================================================
+       SCREEN: HOME
+       ==================================================== -->
+  <div id="screen-home" class="screen">
+
+    <!-- Auth Bar -->
+    <div class="user-auth-bar" id="user-auth-area"></div>
+
+    <header class="home-header">
+      <span class="logo-icon">📘</span>
+      <h1 class="app-title">TOEIC Trainer</h1>
+      <p class="app-subtitle">Reading Section (Part 5 / 6 / 7) &nbsp;·&nbsp; SRS & AI</p>
+    </header>
+
+    <div class="page">
+
+      <!-- Part Selector Tabs -->
+      <div class="part-selector">
+        <button class="part-tab active" data-part="5" onclick="selectPartTab(5)">Part 5</button>
+        <button class="part-tab" data-part="6" onclick="selectPartTab(6)">Part 6</button>
+        <button class="part-tab" data-part="7" onclick="selectPartTab(7)">Part 7</button>
+        <button class="part-tab" data-part="mix" onclick="selectPartTab('mix')">Mix 全波</button>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid">
+        <div class="stat-card" id="stat-due">
+          <div class="stat-value" id="due-count">0</div>
+          <div class="stat-label">今日の復習</div>
+        </div>
+        <div class="stat-card" id="stat-new">
+          <div class="stat-value" id="new-count">0</div>
+          <div class="stat-label">未出題</div>
+        </div>
+        <div class="stat-card" id="stat-acc">
+          <div class="stat-value" id="accuracy-value">—</div>
+          <div class="stat-label">直近正答率</div>
+        </div>
+        <div class="stat-card" id="stat-streak">
+          <div class="stat-value" id="streak-count" style="color:#f97316;">🔥 0日</div>
+          <div class="stat-label">連続学習</div>
+        </div>
+      </div>
+
+      <!-- Overall Progress -->
+      <div class="progress-card">
+        <div class="progress-meta">
+          <span class="progress-label">選択中Partの進捗</span>
+          <span class="progress-text" id="progress-text">0 / 0 問 卒業済み</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <!-- Weekly Analytics Chart Card -->
+      <div class="progress-card" style="margin-top:12px;">
+        <div class="progress-meta">
+          <span class="progress-label">📈 直近7日間の学習成果</span>
+          <span style="font-size:10px; color:var(--purple);">■ 正答率(%) &nbsp; <span style="color:var(--blue);">■ 解いた問題数</span></span>
+        </div>
+        <div id="chart-container" style="padding:10px 0 0;"></div>
+      </div>
+
+      <!-- AI Actions -->
+      <div class="ai-actions-grid">
+        <button class="btn-ai-action" onclick="openGeminiGenModal()">
+          <span>✨</span> AI問題生成
+        </button>
+        <button class="btn-ai-action" onclick="openGeminiReportModal()">
+          <span>📊</span> AI弱点分析
+        </button>
+      </div>
+
+      <!-- Start Area -->
+      <div class="start-area">
+        <button class="btn-start" id="start-btn">
+          <span class="btn-start-main">セッション開始 ▶</span>
+          <span class="btn-start-sub" id="btn-start-sub"></span>
+        </button>
+        <p class="all-done-msg" id="all-done-msg" style="display:none; text-align:center; color:var(--text-muted); font-size:13px; margin-top:10px;">
+          🎉 本日の学習は完了しています！
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ====================================================
+       SCREEN: QUIZ
+       ==================================================== -->
+  <div id="screen-quiz" class="screen">
+
+    <div class="quiz-top page">
+      <button class="btn-back" id="back-btn">←</button>
+      <div class="quiz-progress-info">
+        <span class="quiz-progress-label">
+          <span id="q-num">1</span>&nbsp;/&nbsp;<span id="q-total">10</span>
+        </span>
+      </div>
+      <div class="timer-container" id="timer-container">
+        <svg class="timer-svg" viewBox="0 0 48 48">
+          <circle class="timer-bg-ring" cx="24" cy="24" r="22"/>
+          <circle class="timer-ring" id="timer-ring" cx="24" cy="24" r="22"/>
+        </svg>
+        <span class="timer-text" id="timer-text">45</span>
+      </div>
+    </div>
+
+    <div class="quiz-progress-track page">
+      <div class="quiz-progress-fill" id="quiz-progress-fill" style="width:0%"></div>
+    </div>
+
+    <div class="quiz-content page" style="margin-top:14px;">
+      
+      <div class="cat-row" style="margin-bottom:10px;">
+        <span class="cat-badge cat-pos" id="q-cat">品詞</span>
+      </div>
+
+      <!-- Part 6 / 7 Passage Area -->
+      <div class="passage-card hidden" id="passage-card">
+        <div class="passage-header" id="passage-title">Passage</div>
+        <div id="passage-text"></div>
+      </div>
+
+      <!-- Question Card -->
+      <div class="question-card" id="question-card">
+        <p class="q-text" id="q-text"></p>
+      </div>
+
+      <!-- Choices -->
+      <div class="choices" id="choices"></div>
+
+      <!-- Answer Reveal -->
+      <div class="answer-reveal hidden" id="answer-reveal">
+        <span class="result-badge" id="result-badge"></span>
+        <p class="srs-info" id="srs-info" style="font-size:12px; color:var(--text-muted); margin:4px 0 8px;"></p>
+        <p class="explanation" id="explanation" style="font-size:13.5px; color:var(--text-dim); line-height:1.6;"></p>
+        <button class="btn-ai-explain" onclick="askAiExplanation()">✨ AI先生の深掘り解説を聞く</button>
+      </div>
+
+      <button class="btn-next hidden" id="next-btn"></button>
+
+    </div>
+
+  </div>
+
+
+  <!-- ====================================================
+       SCREEN: RESULT
+       ==================================================== -->
+  <div id="screen-result" class="screen" style="justify-content:center;">
+    <div class="result-content page" style="text-align:center;">
+      <span class="result-emoji" id="result-emoji" style="font-size:54px; display:block; margin-bottom:16px;">🎉</span>
+      
+      <div class="score-ring-wrap" style="position:relative; width:110px; height:110px; margin:0 auto 14px;">
+        <svg class="score-svg" viewBox="0 0 100 100" style="width:100%; height:100%; transform:rotate(-90deg);">
+          <circle class="score-ring-bg" cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="6"/>
+          <circle class="score-ring" id="score-ring" cx="50" cy="50" r="45" fill="none" stroke="url(#scoreGrad)" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+        <div class="score-center" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);">
+          <span class="score-val" id="score-val" style="font-size:36px; font-weight:900;">0</span>
+          <span class="score-denom" id="score-denom" style="font-size:12px; color:var(--text-muted);">/ 10</span>
+        </div>
+      </div>
+
+      <h2 class="result-heading" style="font-size:18px; margin-bottom:16px;">セッション完了</h2>
+
+      <div class="cat-breakdown">
+        <div style="font-size:11px; color:var(--text-muted); margin-bottom:10px;">カテゴリ別正答率</div>
+        <div id="cat-breakdown"></div>
+      </div>
+
+      <button class="btn-home" id="home-btn">ホームに戻る</button>
+    </div>
+  </div>
+
+
+  <!-- ====================================================
+       MODALS (Gemini)
+       ==================================================== -->
+  <div class="modal-overlay" id="ai-modal">
+    <div class="modal-body">
+      <h3 class="modal-title" id="modal-title">AI モーダル</h3>
+      <div id="modal-content" style="font-size:14px; line-height:1.7; color:var(--text-dim);"></div>
+      <button class="btn-close-modal" onclick="closeModal()">閉じる</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="config.js"></script>
+  <script src="passages.js"></script>
+  <script src="questions.js"></script>
+  <script src="srs.js"></script>
+  <script src="auth.js"></script>
+  <script src="analytics.js"></script>
+  <script src="gemini.js"></script>
+  <script src="app.js"></script>
+
+  <script>
+    // PWA Service Worker 登録
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW reg failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>

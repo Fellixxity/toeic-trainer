@@ -1,0 +1,17 @@
+{
+  "name": "TOEIC Trainer - Part 5/6/7 SRS App",
+  "short_name": "TOEIC Trainer",
+  "description": "TOEIC Part 5/6/7 の演習と間隔反復(SRS)アプリ。AI先生・弱点分析機能付き。",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#060b14",
+  "theme_color": "#060b14",
+  "icons": [
+    {
+      "src": "toeic_icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
