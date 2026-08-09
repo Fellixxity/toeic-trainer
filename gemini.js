@@ -20,24 +20,35 @@ const Gemini = {
       throw new Error('Gemini API キーが設定されていません。設定画面から登録してください。');
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: promptText }] }]
-      })
-    });
+    // 利用可能なモデルの優先順位リスト
+    const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash-latest', 'gemini-1.5-pro'];
+    let lastError = null;
 
-    if (!response.ok) {
+    for (const model of models) {
+      try {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: promptText }] }]
+          })
+        });
 
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.error?.message || `APIエラー (Status: ${response.status})`);
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          lastError = new Error(err.error?.message || `Status: ${response.status}`);
+          continue; // 次のモデルで試行
+        }
+
+        const data = await response.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      } catch (e) {
+        lastError = e;
+      }
     }
 
-    const data = await response.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    throw lastError || new Error('Gemini API の呼び出しに失敗しました。');
   },
 
   /**
@@ -65,7 +76,6 @@ TOEIC Part ${part} の演習問題を ${count} 問作成してください。
 ]
 `;
     const resText = await this.callGemini(prompt);
-    // JSON文字列のクリーニング
     const cleanJson = resText.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleanJson);
   },
