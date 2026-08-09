@@ -476,6 +476,18 @@ async function askAiExplanation() {
   }
 }
 
+function openGeminiKeySettingModal() {
+  const currentKey = Gemini.getApiKey();
+  const maskedKey = currentKey ? currentKey.substring(0, 6) + '...' + currentKey.substring(currentKey.length - 4) : '未設定';
+
+  openModal('🔑 Gemini APIキー設定', `
+    <p style="margin-bottom:10px;">Google AI Studio で取得した API キーを入力してください。（ブラウザ内だけに安全に保存されます）</p>
+    <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">現在の状態: <strong style="color:var(--text);">${maskedKey}</strong></div>
+    <input id="modal-gemini-key-input" type="password" placeholder="AIzaSy..." value="${currentKey}" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:#060b14; color:#fff; font-size:14px; margin-bottom:12px;" />
+    <button onclick="const k=document.getElementById('modal-gemini-key-input').value; Gemini.setApiKey(k); alert('APIキーを保存しました！'); closeModal();" style="width:100%; padding:12px; background:var(--blue); color:#fff; border:none; border-radius:10px; font-weight:700; cursor:pointer;">保存する</button>
+  `);
+}
+
 async function openGeminiGenModal() {
   const stats = getStats();
   const weakCat = stats.weakCat || 'pos';
