@@ -6,16 +6,29 @@ const Auth = {
   client: null,
   user: null,
 
-  init() {
-    if (typeof supabase === 'undefined' || !CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY) {
-      console.log('Supabase config not supplied or library missing. Operating in offline/localStorage mode.');
+  async init() {
+    // CDNスクリプトのロード待機 (最大3秒)
+    let retries = 0;
+    while (typeof supabase === 'undefined' && retries < 30) {
+      await new Promise(r => setTimeout(r, 100));
+      retries++;
+    }
+
+    if (typeof supabase === 'undefined') {
+      console.warn('Supabase JS SDK の読み込みに失敗しました。オフラインモードで動作します。');
+      this.updateUI();
+      return;
+    }
+
+    if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY) {
+      console.warn('Supabase URL または KEY が未設定です。');
       this.updateUI();
       return;
     }
 
     try {
       this.client = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
-      this.checkSession();
+      await this.checkSession();
     } catch (e) {
       console.error('Supabase init failed:', e);
     }
@@ -23,35 +36,57 @@ const Auth = {
 
   async checkSession() {
     if (!this.client) return;
-    const { data: { session } } = await this.client.auth.getSession();
-    if (session) {
-      this.user = session.user;
-      this.updateUI();
-      await this.syncDown();
-    }
-    
-    this.client.auth.onAuthStateChange(async (event, session) => {
+    try {
+      const { data: { session } } = await this.client.auth.getSession();
       if (session) {
         this.user = session.user;
         this.updateUI();
         await this.syncDown();
-      } else {
-        this.user = null;
-        this.updateUI();
       }
-    });
+
+      this.client.auth.onAuthStateChange(async (event, session) => {
+        if (session) {
+          this.user = session.user;
+          this.updateUI();
+          await this.syncDown();
+        } else {
+          this.user = null;
+          this.updateUI();
+        }
+      });
+    } catch (err) {
+      console.error('Session check error:', err);
+    }
   },
 
   async loginWithGitHub() {
     if (!this.client) {
-      alert('Supabase の設定 (config.js) がされていません。');
-      return;
+      // client が null の場合に原因を親切にポップアップ表示
+      if (typeof supabase === 'undefined') {
+        alert('Supabase ライブラリの読み込み中です。数秒待ってから再試行してください。');
+      } else if (!CONFIG.SUPABASE_URL || !CONFIG.SUPABASE_ANON_KEY) {
+        alert('config.js の SUPABASE_URL / ANON_KEY が設定されていません。');
+      } else {
+        try {
+          this.client = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        } catch (e) {
+          alert('Supabase クライアント初期化エラー: ' + e.message);
+          return;
+        }
+      }
     }
-    const { error } = await this.client.auth.signInWithOAuth({
-      provider: 'github',
-      options: { redirectTo: window.location.href }
-    });
-    if (error) alert('GitHub ログインエラー: ' + error.message);
+
+    if (!this.client) return;
+
+    try {
+      const { error } = await this.client.auth.signInWithOAuth({
+        provider: 'github',
+        options: { redirectTo: window.location.origin + window.location.pathname }
+      });
+      if (error) alert('GitHub ログインエラー: ' + error.message);
+    } catch (e) {
+      alert('ログイン処理エラー: ' + e.message);
+    }
   },
 
   async logout() {
@@ -109,7 +144,7 @@ const Auth = {
         .from('srs_records')
         .select('*')
         .eq('user_id', this.user.id);
-      
+
       if (error) throw error;
       if (data && data.length > 0) {
         data.forEach(item => {
