@@ -9,6 +9,7 @@ const ASSETS = [
   './srs.js',
   './auth.js',
   './analytics.js',
+  './effects.js',
   './gemini.js',
   './app.js',
   './manifest.json',

@@ -218,6 +218,11 @@ function renderHome() {
   if (fill) fill.style.width = `${pct}%`;
   setText('progress-text', `${stats.graduated} / ${stats.totalInPart} 問 卒業済み`);
 
+  // 予想スコア計算 & 表示
+  const pred = Analytics.calculatePredictedScore(App.history, App.srsData, QUESTION_BANK.length);
+  setText('predicted-score-val', pred.score);
+  setText('predicted-rank', pred.rank);
+
   // 過去7日間の成果グラフを描画
   const chartContainer = document.getElementById('chart-container');
   if (chartContainer) {
@@ -363,6 +368,19 @@ function renderAnswerFeedback(selectedIdx, isCorrect, timeExpired) {
     }
   });
 
+  // 音声フィードバック
+  if (isCorrect && !timeExpired) {
+    Sound.playCorrect();
+    // 卒業時は紙吹雪
+    const record = App.srsData[q.id];
+    if (record && record.status === 'graduated') {
+      Confetti.fire();
+    }
+  } else {
+    Sound.playWrong();
+  }
+
+  // バッジ
   const badge = document.getElementById('result-badge');
   if (badge) {
     if (timeExpired) {
@@ -447,6 +465,12 @@ function showResult() {
     }).join('');
   }
 
+  // 80%以上の高スコアで紙吹雪 & ファンファーレ
+  if (pct >= 0.8) {
+    Sound.playFanfare();
+    Confetti.fire();
+  }
+
   showScreen('screen-result');
 }
 
@@ -519,8 +543,21 @@ async function openGeminiReportModal() {
   }
 }
 
+function speakCurrentQuestion() {
+  const { session } = App;
+  if (!session || !session.questions[session.currentIndex]) return;
+  const q = session.questions[session.currentIndex];
+  
+  let speechText = q.q ? q.q.replace('-------', 'blank') : '';
+  if (q.passageId && PASSAGE_BANK[q.passageId]) {
+    speechText = PASSAGE_BANK[q.passageId].text.replace(/\[\d+\]-------/g, 'blank') + '. ' + speechText;
+  }
+  TTS.speak(speechText);
+}
+
 function init() {
   loadData();
+  Sound.init();
   Auth.init();
   renderHome();
   showScreen('screen-home');

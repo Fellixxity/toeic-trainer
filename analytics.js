@@ -4,6 +4,34 @@
  */
 const Analytics = {
   /**
+   * TOEIC Reading 予想スコア (100点 〜 495点) を算出
+   */
+  calculatePredictedScore(history, srsData, totalQuestionsCount) {
+    if (!history || history.length < 5) {
+      return { score: 120, rank: '測定中...', detail: '過去の回答データが5件未満です' };
+    }
+
+    const recent = history.slice(-30);
+    const accuracyRatio = recent.filter(h => h.correct).length / recent.length;
+
+    // 卒業数の割合
+    const graduatedCount = Object.values(srsData).filter(r => r.status === 'graduated').length;
+    const graduatedRatio = Math.min(1, graduatedCount / (totalQuestionsCount || 44));
+
+    // スコア算出 (100~495)
+    let score = 100 + Math.round(accuracyRatio * 270) + Math.round(graduatedRatio * 125);
+    score = Math.min(495, Math.max(100, Math.round(score / 5) * 5));
+
+    let rank = '初級 Challenger';
+    if (score >= 420) rank = '👑 900+ マスター級';
+    else if (score >= 360) rank = '🔥 800+ エキスパート';
+    else if (score >= 300) rank = '✨ 700+ アチーバー';
+    else if (score >= 230) rank = '📘 600+ スタンダード';
+
+    return { score, rank, accuracyRatio: Math.round(accuracyRatio * 100) };
+  },
+
+  /**
    * 過去 N 日間の日付リスト ['8/3', '8/4', ...] を取得
    */
   getPastDays(daysCount = 7) {
@@ -38,7 +66,6 @@ const Analytics = {
       if (dates.has(dateStr)) {
         streak++;
       } else if (i > 0) {
-        // 今日まだやっていなくても昨日やっていれば連続継続扱い
         break;
       }
     }
@@ -88,7 +115,6 @@ const Analytics = {
     dailyStats.forEach((d, i) => {
       const x = padding + (chartW / (dailyStats.length - 1 || 1)) * i;
       
-      // 棒グラフ（問題数）
       const barH = (d.total / maxCount) * chartH;
       const barY = height - padding - barH;
       barsHtml += `
@@ -96,15 +122,12 @@ const Analytics = {
         <text x="${x}" y="${height - 8}" font-size="9" fill="#94a3b8" text-anchor="middle">${d.label}</text>
       `;
 
-      // 折れ線グラフ用座標（正答率）
       const accY = height - padding - (d.accuracy / 100) * chartH;
       points.push({ x, y: accY, acc: d.accuracy });
     });
 
-    // 折れ線パス
     const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
 
-    // ドットと値ラベル
     let dotsHtml = '';
     points.forEach(p => {
       dotsHtml += `
@@ -115,15 +138,10 @@ const Analytics = {
 
     return `
       <svg viewBox="0 0 ${width} ${height}" style="width:100%; height:auto; overflow:visible;">
-        <!-- ガイドライン -->
         <line x1="${padding}" y1="${padding}" x2="${width - padding}" y2="${padding}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 3"/>
         <line x1="${padding}" y1="${height / 2}" x2="${width - padding}" y2="${height / 2}" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3 3"/>
         <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="rgba(255,255,255,0.1)"/>
-
-        <!-- 棒グラフ -->
         ${barsHtml}
-
-        <!-- 折れ線グラフ -->
         <path d="${linePath}" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
         ${dotsHtml}
       </svg>
