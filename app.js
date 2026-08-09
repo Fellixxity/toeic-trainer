@@ -207,7 +207,10 @@ function renderHome() {
 
   setText('due-count', stats.dueReviews.length);
   setText('new-count', stats.newQuestions.length);
-  setText('accuracy-value', stats.accuracy !== null ? `${stats.accuracy}%` : '—');
+
+  // 学習時間表示
+  const timeStats = Analytics.getStudyTimeStats(App.history);
+  setText('study-time-today', timeStats.todayFormatted);
 
   // Streak 計算 & 表示
   const streak = Analytics.calculateStreak(App.history);
@@ -315,6 +318,7 @@ function renderQuestion() {
   document.getElementById('answer-reveal')?.classList.add('hidden');
   document.getElementById('next-btn')?.classList.add('hidden');
 
+  App.session.questionStartTime = Date.now();
   startTimer();
 }
 
@@ -335,6 +339,8 @@ function processAnswer(selectedIdx, isCorrect) {
   const { session } = App;
   const q = session.questions[session.currentIndex];
 
+  const durationSec = Math.max(1, Math.round((Date.now() - (session.questionStartTime || Date.now())) / 1000));
+
   const existing = App.srsData[q.id] || { status: 'new', interval: 0, correctStreak: 0, attempts: 0, correctCount: 0 };
   const updated = SRS.updateRecord(existing, isCorrect);
   App.srsData[q.id] = updated;
@@ -343,7 +349,8 @@ function processAnswer(selectedIdx, isCorrect) {
     questionId: q.id,
     correct: isCorrect,
     timestamp: new Date().toISOString(),
-    category: q.cat
+    category: q.cat,
+    durationSec: durationSec
   });
 
   session.results.push({ questionId: q.id, correct: isCorrect, category: q.cat });

@@ -4,6 +4,46 @@
  */
 const Analytics = {
   /**
+   * 学習時間の集計 (今日の時間・累計時間)
+   */
+  getStudyTimeStats(history) {
+    if (!history || history.length === 0) {
+      return { todaySec: 0, totalSec: 0, todayFormatted: '0分', totalFormatted: '0分' };
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    let todaySec = 0;
+    let totalSec = 0;
+
+    history.forEach(h => {
+      const duration = h.durationSec || 15;
+      totalSec += duration;
+
+      const dateStr = new Date(h.timestamp).toISOString().split('T')[0];
+      if (dateStr === todayStr) {
+        todaySec += duration;
+      }
+    });
+
+    return {
+      todaySec,
+      totalSec,
+      todayFormatted: this.formatDuration(todaySec),
+      totalFormatted: this.formatDuration(totalSec)
+    };
+  },
+
+  formatDuration(seconds) {
+    if (seconds < 60) return `${seconds}秒`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins < 60) return secs > 0 ? `${mins}分${secs}秒` : `${mins}分`;
+    const hours = Math.floor(mins / 60);
+    const remMins = mins % 60;
+    return remMins > 0 ? `${hours}時間${remMins}分` : `${hours}時間`;
+  },
+
+  /**
    * TOEIC Reading 予想スコア (100点 〜 495点) を算出
    */
   calculatePredictedScore(history, srsData, totalQuestionsCount) {
@@ -14,11 +54,9 @@ const Analytics = {
     const recent = history.slice(-30);
     const accuracyRatio = recent.filter(h => h.correct).length / recent.length;
 
-    // 卒業数の割合
     const graduatedCount = Object.values(srsData).filter(r => r.status === 'graduated').length;
     const graduatedRatio = Math.min(1, graduatedCount / (totalQuestionsCount || 44));
 
-    // スコア算出 (100~495)
     let score = 100 + Math.round(accuracyRatio * 270) + Math.round(graduatedRatio * 125);
     score = Math.min(495, Math.max(100, Math.round(score / 5) * 5));
 
@@ -31,9 +69,6 @@ const Analytics = {
     return { score, rank, accuracyRatio: Math.round(accuracyRatio * 100) };
   },
 
-  /**
-   * 過去 N 日間の日付リスト ['8/3', '8/4', ...] を取得
-   */
   getPastDays(daysCount = 7) {
     const days = [];
     for (let i = daysCount - 1; i >= 0; i--) {
@@ -46,9 +81,6 @@ const Analytics = {
     return days;
   },
 
-  /**
-   * 連続学習日数 (Streak) を計算
-   */
   calculateStreak(history) {
     if (!history || history.length === 0) return 0;
     
@@ -72,20 +104,18 @@ const Analytics = {
     return streak;
   },
 
-  /**
-   * 日別集計データを生成
-   */
   getDailyStats(history, daysCount = 7) {
     const days = this.getPastDays(daysCount);
     const dayMap = {};
     days.forEach(d => {
-      dayMap[d.dateStr] = { label: d.label, total: 0, correct: 0 };
+      dayMap[d.dateStr] = { label: d.label, total: 0, correct: 0, durationSec: 0 };
     });
 
     history.forEach(h => {
       const dateStr = new Date(h.timestamp).toISOString().split('T')[0];
       if (dayMap[dateStr]) {
         dayMap[dateStr].total++;
+        dayMap[dateStr].durationSec += (h.durationSec || 15);
         if (h.correct) dayMap[dateStr].correct++;
       }
     });
@@ -96,9 +126,6 @@ const Analytics = {
     }));
   },
 
-  /**
-   * 複合チャート（棒グラフ:解いた数 + 折れ線グラフ:正答率）の SVG 生成
-   */
   renderDailyChartSvg(dailyStats) {
     const width = 320;
     const height = 160;
