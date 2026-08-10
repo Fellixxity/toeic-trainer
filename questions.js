@@ -466,6 +466,447 @@ const QUESTION_BANK = [
       'By completing an online survey beforehand'
     ],
     a: 2, exp: '広告文「Register before November 15 to receive an Early Bird Discount of 15% off」より11月15日前の登録が正解。'
+  },
+
+
+  // ================================================================
+  // PART 5 追加分（品詞・前置詞/接続詞）
+  // ================================================================
+  {
+    id: 'p008', part: 5, passageId: null, cat: 'pos',
+    q: 'All employees must submit their travel expense reports to the finance department for ------- before the end of the month.',
+    choices: ['approve', 'approving', 'approval', 'approved'],
+    a: 2, exp: '前置詞 for の直後は名詞。「前置詞＋（　）」は名詞を選ぶのが原則。'
+  },
+  {
+    id: 'p009', part: 5, passageId: null, cat: 'pos',
+    q: 'The new inventory system has proven to be remarkably ------- in reducing warehouse delays.',
+    choices: ['effect', 'effective', 'effectively', 'effectiveness'],
+    a: 1, exp: 'be動詞の補語かつ副詞 remarkably に修飾される位置なので形容詞。「副詞＋（　）」が be の後ろなら形容詞。'
+  },
+  {
+    id: 'p010', part: 5, passageId: null, cat: 'pos',
+    q: "Ms. Alvarez handled the client's complaint so ------- that the contract was renewed the following week.",
+    choices: ['profession', 'professional', 'professionally', 'professionalism'],
+    a: 2, exp: 'handled という完全な動詞句を修飾するので副詞。so ... that の空所は、修飾対象が動詞か名詞かで品詞を決める。'
+  },
+  {
+    id: 'p011', part: 5, passageId: null, cat: 'pos',
+    q: 'The construction crew worked overtime to ensure the ------- of the new distribution center by March.',
+    choices: ['complete', 'completely', 'completion', 'completed'],
+    a: 2, exp: 'the と of に挟まれた位置は名詞しか入らない。「the ------- of」は品詞問題の最頻出パターン。'
+  },
+  {
+    id: 'p012', part: 5, passageId: null, cat: 'pos',
+    q: 'Applicants who have previously worked in logistics will be given ------- consideration during the screening process.',
+    choices: ['prefer', 'preference', 'preferential', 'preferably'],
+    a: 2, exp: '名詞 consideration を修飾する位置なので形容詞。名詞の直前が空所ならまず形容詞を疑う。'
+  },
+  {
+    id: 'p013', part: 5, passageId: null, cat: 'pos',
+    q: 'The revised safety guidelines were distributed to all shift supervisors ------- after the board meeting concluded.',
+    choices: ['immediate', 'immediacy', 'immediately', 'immediateness'],
+    a: 2, exp: '文の要素が揃っており後ろの after 節を修飾するので副詞。完全文の後の空所は副詞が基本。'
+  },
+  {
+    id: 'p014', part: 5, passageId: null, cat: 'pos',
+    q: 'Because the supplier failed to meet the agreed deadline, the manufacturer decided to ------- the contract.',
+    choices: ['termination', 'terminal', 'terminate', 'terminally'],
+    a: 2, exp: 'to の直後で目的語 the contract を取るので動詞の原形。to＋（　）＋目的語なら to不定詞と判断する。'
+  },
+  {
+    id: 'p015', part: 5, passageId: null, cat: 'pos',
+    q: "The training manual provides a ------- overview of the company's data security procedures.",
+    choices: ['comprehend', 'comprehension', 'comprehensive', 'comprehensively'],
+    a: 2, exp: '冠詞 a と名詞 overview の間は形容詞の定位置。「a＋（　）＋名詞」は形容詞。'
+  },
+  {
+    id: 'r007', part: 5, passageId: null, cat: 'prep',
+    q: 'The renovation of the east wing will not begin ------- the tenants have relocated to temporary offices.',
+    choices: ['until', 'by', 'during', 'prior to'],
+    a: 0, exp: '後ろが節なので接続詞が必要。「〜するまで始まらない」の意味で until。by / during / prior to は前置詞で節を導けない。'
+  },
+  {
+    id: 'r008', part: 5, passageId: null, cat: 'prep',
+    q: 'Employees may access the parking garage on weekends ------- they present a valid identification badge.',
+    choices: ['in case of', 'provided that', 'owing to', 'regardless of'],
+    a: 1, exp: '後ろが節で「〜という条件で」。provided that は条件の接続詞。他は前置詞句で名詞しか続かない。'
+  },
+  {
+    id: 'r009', part: 5, passageId: null, cat: 'prep',
+    q: "The keynote speaker's presentation was postponed ------- a malfunction in the auditorium's sound system.",
+    choices: ['because', 'so that', 'due to', 'therefore'],
+    a: 2, exp: '後ろが名詞句なので前置詞句の due to。because は節、because of なら名詞句という区別が問われる。'
+  },
+  {
+    id: 'r010', part: 5, passageId: null, cat: 'prep',
+    q: 'The consulting firm has offices in twelve countries ------- Asia and South America.',
+    choices: ['throughout', 'among', 'along', 'toward'],
+    a: 0, exp: '広い地域の「〜各地に」は throughout。among は同種の複数の中で、along は線状のものに沿って。'
+  },
+  {
+    id: 'r011', part: 5, passageId: null, cat: 'prep',
+    q: '------- the marketing team relies on social media, the sales division still favors direct client visits.',
+    choices: ['Unlike', 'In spite of', 'While', 'Instead of'],
+    a: 2, exp: '後ろが節なので接続詞。対比の「〜する一方で」は While。他はすべて前置詞（句）。'
+  },
+
+  // ================================================================
+  // PART 5 追加分（文法・準動詞）
+  // ================================================================
+  {
+    id: 'g009', part: 5, passageId: null, cat: 'gram',
+    q: 'The board members insisted that the quarterly report ------- to all shareholders before the annual meeting.',
+    choices: ['is distributed', 'be distributed', 'distributing', 'was distributing'],
+    a: 1, exp: 'insist / suggest / recommend / request / require の that節は原形（仮定法現在）。受動なので be distributed。'
+  },
+  {
+    id: 'g010', part: 5, passageId: null, cat: 'gram',
+    q: 'The consultant recommended that the company ------- its overseas expansion until market conditions improve.',
+    choices: ['postpones', 'postponed', 'postpone', 'to postpone'],
+    a: 2, exp: 'recommend that の後は原形。三人称単数主語でも -s を付けないのがポイント。'
+  },
+  {
+    id: 'g011', part: 5, passageId: null, cat: 'gram',
+    q: 'Regulations require that every visitor ------- a temporary badge while inside the research facility.',
+    choices: ['wears', 'wear', 'wearing', 'has worn'],
+    a: 1, exp: 'require that も仮定法現在で原形。every visitor という単数主語に惑わされない。'
+  },
+  {
+    id: 'g012b', part: 5, passageId: null, cat: 'gram',
+    q: 'Ms. Tanaka requested that the invoice ------- in euros rather than in yen.',
+    choices: ['will be issued', 'be issued', 'is issuing', 'issued'],
+    a: 1, exp: 'request that も原形。受動の内容なので be + 過去分詞の原形 be issued。'
+  },
+  {
+    id: 'g013b', part: 5, passageId: null, cat: 'gram',
+    q: 'The new packaging line, which ------- last March, has already reduced shipping costs by twelve percent.',
+    choices: ['installed', 'was installed', 'has installed', 'installing'],
+    a: 1, exp: '先行詞 line は設置される側なので受動態。last March という過去の一点があるので過去形。'
+  },
+  {
+    id: 'g014', part: 5, passageId: null, cat: 'gram',
+    q: 'Each of the branch managers ------- responsible for submitting a monthly sales forecast to headquarters.',
+    choices: ['are', 'is', 'have been', 'being'],
+    a: 1, exp: 'Each of + 複数名詞 は単数扱い。of 以下の複数名詞に引きずられないこと。'
+  },
+  {
+    id: 'g015', part: 5, passageId: null, cat: 'gram',
+    q: 'Sales in the eastern region grew ------- than the marketing team had anticipated at the start of the fiscal year.',
+    choices: ['more rapid', 'much rapidly', 'far more rapidly', 'the most rapidly'],
+    a: 2, exp: 'than があるので比較級、かつ動詞 grew を修飾するので副詞の比較級。far は比較級の強調。'
+  },
+  {
+    id: 'g016', part: 5, passageId: null, cat: 'gram',
+    q: '------- the supervisor nor the technicians were informed of the schedule change in advance.',
+    choices: ['Either', 'Neither', 'Both', 'Not only'],
+    a: 1, exp: 'nor と対になるのは neither。either or / both and / not only but also とペアで覚える。'
+  },
+  {
+    id: 'g017', part: 5, passageId: null, cat: 'gram',
+    q: 'Employees ------- travel expenses exceed the monthly limit must obtain written approval from the finance department.',
+    choices: ['who', 'whose', 'which', 'whom'],
+    a: 1, exp: '直後が無冠詞の名詞で「従業員の交通費」という所有関係なので所有格の whose。'
+  },
+  {
+    id: 'g018', part: 5, passageId: null, cat: 'gram',
+    q: 'Although the two proposals appear similar, the pricing structure of the second one is far more detailed than ------- of the first.',
+    choices: ['them', 'that', 'those', 'it'],
+    a: 1, exp: '比較対象は単数の structure なので、繰り返しを避ける代名詞は that。複数なら those。'
+  },
+  {
+    id: 'e006', part: 5, passageId: null, cat: 'gerund',
+    q: 'The finance team is responsible for ------- all reimbursement requests within five business days.',
+    choices: ['process', 'processes', 'processing', 'to process'],
+    a: 2, exp: '前置詞 for の後ろに動詞を置くときは動名詞。be responsible for -ing の形で押さえる。'
+  },
+  {
+    id: 'e007', part: 5, passageId: null, cat: 'gerund',
+    q: 'After reviewing the contract, the legal department suggested ------- the confidentiality clause entirely.',
+    choices: ['to rewrite', 'rewriting', 'rewrite', 'rewritten'],
+    a: 1, exp: 'suggest は動名詞を目的語に取り、to不定詞は取らない。avoid / consider / recommend も同じ仲間。'
+  },
+  {
+    id: 'e008', part: 5, passageId: null, cat: 'gerund',
+    q: 'The plant manager could not afford ------- production while the replacement parts were still in transit.',
+    choices: ['halting', 'halt', 'to halt', 'halted'],
+    a: 2, exp: 'afford は to不定詞のみを取る（afford to do）。動名詞を取る suggest 型との区別が問われる。'
+  },
+  {
+    id: 'e009', part: 5, passageId: null, cat: 'gerund',
+    q: '------- in 1998, Delmar Logistics has grown into the largest freight handler in the region.',
+    choices: ['Founding', 'Founded', 'To found', 'Having founded'],
+    a: 1, exp: '分詞構文。主語 Delmar Logistics は設立される側なので過去分詞。主語との能動・受動関係で判断する。'
+  },
+  {
+    id: 'e010', part: 5, passageId: null, cat: 'gerund',
+    q: 'Please remember ------- the security code before leaving the office, as the alarm activates automatically at ten.',
+    choices: ['entering', 'to enter', 'entered', 'having entered'],
+    a: 1, exp: 'remember to do =「これからすることを忘れずに」、remember doing =「したことを覚えている」。指示文なので to不定詞。'
+  },
+  {
+    id: 'e011', part: 5, passageId: null, cat: 'gerund',
+    q: 'The supplier apologized for ------- us of the delay until the shipment had already left the warehouse.',
+    choices: ['not notifying', 'not to notify', 'not notified', 'having not notify'],
+    a: 0, exp: '前置詞 for の後は動名詞、否定は動名詞の直前に not を置く（not -ing）。語順が問われる典型。'
+  },
+
+  // ================================================================
+  // PART 5 追加分（語彙コロケーション・言い換え）
+  // ================================================================
+  {
+    id: 'v022', part: 5, passageId: null, cat: 'colloc',
+    q: 'All shipments to overseas branches are ------- to additional customs duties, which are billed separately.',
+    choices: ['subject', 'reliant', 'sensitive', 'capable'],
+    a: 0, exp: 'be subject to =「〜の対象となる・課される」。関税・手数料・変更などに使う定型。'
+  },
+  {
+    id: 'v023', part: 5, passageId: null, cat: 'colloc',
+    q: 'Ms. Delgado asked the accounting team to ------- the discrepancy between the invoice total and the purchase order.',
+    choices: ['resolve', 'conclude', 'persuade', 'dedicate'],
+    a: 0, exp: 'resolve a discrepancy / an issue =「食い違いを解消する」。persuade は人が目的語。'
+  },
+  {
+    id: 'v024b', part: 5, passageId: null, cat: 'colloc',
+    q: 'The new scheduling software has helped the plant ------- production costs by nearly fifteen percent.',
+    choices: ['reduce', 'shorten', 'lower down', 'decline'],
+    a: 0, exp: 'コスト削減は reduce costs（cut costs も可）。shorten は長さ・時間、decline は自動詞で目的語を取れない。'
+  },
+  {
+    id: 'v025b', part: 5, passageId: null, cat: 'colloc',
+    q: 'Employees who wish to attend the leadership seminar must obtain written ------- from their department head.',
+    choices: ['permission', 'permit', 'admittance', 'allowance'],
+    a: 0, exp: 'obtain written permission =「書面による許可を得る」。permission は不可算。permit は許可証（可算）。'
+  },
+  {
+    id: 'v026b', part: 5, passageId: null, cat: 'colloc',
+    q: 'The renovation of the east wing will ------- normal office operations for approximately two weeks.',
+    choices: ['disrupt', 'disturb', 'distract', 'disorder'],
+    a: 0, exp: '業務やサービスの中断は disrupt operations。disturb は人の静けさ、distract は注意をそらす。'
+  },
+  {
+    id: 'v027b', part: 5, passageId: null, cat: 'colloc',
+    q: 'The courier service offers ------- delivery for an extra fee, guaranteeing arrival by the next business day.',
+    choices: ['expedited', 'hastened', 'urgent', 'instant'],
+    a: 0, exp: 'expedited delivery / shipping =「速達扱いの配送」。物流の定番表現。instant は翌営業日と矛盾。'
+  },
+  {
+    id: 'v028', part: 5, passageId: null, cat: 'colloc',
+    q: "The technician's report clearly showed how the humidity in the storage room had ------- the packaging materials.",
+    choices: ['affected', 'effected', 'afflicted', 'reflected'],
+    a: 0, exp: '「影響を与える」の動詞は affect。effect は動詞では effect change のような限定的用法のみ。'
+  },
+  {
+    id: 'v029', part: 5, passageId: null, cat: 'colloc',
+    q: 'Applicants are reminded that the salary figure listed in the posting is ------- and may be adjusted based on experience.',
+    choices: ['negotiable', 'arguable', 'refundable', 'debatable'],
+    a: 0, exp: '給与が「交渉の余地がある」は negotiable。求人広告で頻出。arguable / debatable は主張についての議論。'
+  },
+  {
+    id: 'v030', part: 5, passageId: null, cat: 'colloc',
+    q: 'Hotel guests may ------- the fitness center at no charge simply by presenting their room key.',
+    choices: ['access', 'approach', 'enter into', 'reach for'],
+    a: 0, exp: '施設やサービスを「利用する」は access（他動詞なので前置詞不要）。enter into は契約や議論に使う。'
+  },
+  {
+    id: 'v031', part: 5, passageId: null, cat: 'colloc',
+    q: 'Due to an unexpected ------- of orders following the trade show, the warehouse extended its operating hours.',
+    choices: ['surge', 'elevation', 'boost', 'progress'],
+    a: 0, exp: 'a surge of / in orders =「注文の急増」。需要や問い合わせの急増に使う。'
+  },
+  {
+    id: 'v032', part: 5, passageId: null, cat: 'colloc',
+    q: 'The customer service manual instructs staff to ------- unresolved complaints to a senior representative within 24 hours.',
+    choices: ['escalate', 'elevate', 'promote', 'advance'],
+    a: 0, exp: '苦情や案件を上位者に引き継ぐのは escalate ~ to ...。elevate は物理的・地位的に高める意味。'
+  },
+  {
+    id: 'v033', part: 5, passageId: null, cat: 'colloc',
+    q: '"The store will issue a full refund only if the item is returned unopened within 30 days of purchase." 言い換えると？',
+    choices: [
+      'Items must be both unopened and returned within a month to qualify for a full refund.',
+      'Any item returned within 30 days will receive a full refund regardless of its condition.',
+      'Unopened items can be returned at any time for a full refund.',
+      'The store gives partial refunds for items opened after 30 days.'
+    ],
+    a: 0, exp: 'only if は「未開封」と「30日以内」の両方が必要という条件。両条件の同時成立が言い換えの鍵。'
+  },
+  {
+    id: 'v034', part: 5, passageId: null, cat: 'colloc',
+    q: '"Mr. Alvarez will be out of the office until Thursday, so please direct any urgent inquiries to Ms. Chen." 言い換えると？',
+    choices: [
+      "Ms. Chen should be contacted about pressing matters during Mr. Alvarez's absence.",
+      'Mr. Alvarez will answer urgent questions after he returns on Thursday.',
+      "Ms. Chen has permanently taken over Mr. Alvarez's responsibilities.",
+      'Urgent inquiries should be held until Mr. Alvarez comes back.'
+    ],
+    a: 0, exp: 'direct inquiries to A = A に問い合わせる、urgent = pressing。不在中の代理窓口という趣旨。'
+  },
+  {
+    id: 'v035', part: 5, passageId: null, cat: 'colloc',
+    q: '"Registration fees are waived for members who sign up before the early-bird deadline." 言い換えると？',
+    choices: [
+      'Members who register early do not have to pay the fee.',
+      'Members receive a discount on the registration fee if they sign up early.',
+      'All participants can register for free until the deadline.',
+      'The registration deadline has been extended for members.'
+    ],
+    a: 0, exp: 'waive a fee =「料金を免除する」。全額不要なので割引（一部負担）とは異なる。'
+  },
+  {
+    id: 'v036', part: 5, passageId: null, cat: 'colloc',
+    q: '"The updated software will be installed on all workstations over the weekend to minimize interruptions to daily work." 言い換えると？',
+    choices: [
+      "The installation is scheduled for the weekend so that employees' regular tasks are affected as little as possible.",
+      'Employees will need to install the software themselves before Monday.',
+      'The software update was delayed because it interrupted daily work.',
+      'Workstations will be unavailable throughout the following week.'
+    ],
+    a: 0, exp: 'minimize interruptions to daily work =「通常業務への支障を最小限にする」が言い換えの核。'
+  },
+  {
+    id: 'v037', part: 5, passageId: null, cat: 'colloc',
+    q: '"Applicants lacking formal certification may still be considered if they can demonstrate equivalent practical experience." 言い換えると？',
+    choices: [
+      'Candidates without certification can be evaluated when they show comparable hands-on experience.',
+      'Only certified applicants will be reviewed by the hiring committee.',
+      'Practical experience is valued more highly than formal certification.',
+      'Applicants must have both certification and practical experience.'
+    ],
+    a: 0, exp: 'lacking = without、equivalent = comparable。資格がなくても実務経験があれば対象という条件付きの譲歩。'
+  },
+  {
+    id: 'v038', part: 5, passageId: null, cat: 'colloc',
+    q: '"Shipping charges will be added to your invoice unless your order exceeds $500." 言い換えると？',
+    choices: [
+      'Orders over $500 are not charged for shipping.',
+      'A shipping fee of $500 applies to all invoices.',
+      'Customers must pay shipping charges on every order.',
+      'Orders under $500 qualify for free shipping.'
+    ],
+    a: 0, exp: 'unless =「〜でない限り」。500ドル超なら送料が加算されない、と条件を裏返して読む。'
+  },
+
+  // ================================================================
+  // PART 6 追加分
+  // ================================================================
+  {
+    id: 'p6_003_q1', part: 6, passageId: 'p6_003', blankNum: 131, cat: 'colloc',
+    q: '空所[131]に入る語句を選んでください。',
+    choices: ['disrupted', 'dismissed', 'declined', 'detached'],
+    a: 0, exp: '「通常業務が妨げられることはない」という文脈なので disrupt（中断させる）。'
+  },
+  {
+    id: 'p6_003_q2', part: 6, passageId: 'p6_003', blankNum: 132, cat: 'gram',
+    q: '空所[132]に入る語句を選んでください。',
+    choices: ['will be delivered', 'delivering', 'to deliver', 'has delivered'],
+    a: 0, exp: '関係代名詞 that の述語動詞が必要。crates は届けられる側なので受動態、かつ今週水曜の予定なので未来形。'
+  },
+  {
+    id: 'p6_003_q3', part: 6, passageId: 'p6_003', blankNum: 133, cat: 'reading',
+    q: '空所[133]に入る最も適切な文を選んでください。',
+    choices: [
+      'Lockable storage cabinets have been installed along the fifth-floor corridor.',
+      'The moving company has requested a copy of the building insurance policy.',
+      'Marketing reports for the first quarter are due at the end of this week.',
+      'Parking permits for the north garage will expire at the end of March.'
+    ],
+    a: 0, exp: '直後に「各ユニットには番号があり鍵は月曜に配布」とあるため、鍵付き収納庫の設置を述べる文がつながる。'
+  },
+  {
+    id: 'p6_003_q4', part: 6, passageId: 'p6_003', blankNum: 134, cat: 'prep',
+    q: '空所[134]に入る語句を選んでください。',
+    choices: ['before', 'among', 'despite', 'along'],
+    a: 0, exp: '「金曜午後より前に連絡してください」という期限なので before。'
+  },
+  {
+    id: 'p6_004_q1', part: 6, passageId: 'p6_004', blankNum: 131, cat: 'pos',
+    q: '空所[131]に入る語句を選んでください。',
+    choices: ['considerably', 'considerable', 'consider', 'consideration'],
+    a: 0, exp: '形容詞の比較級 simpler を修飾するので副詞 considerably。'
+  },
+  {
+    id: 'p6_004_q2', part: 6, passageId: 'p6_004', blankNum: 132, cat: 'gram',
+    q: '空所[132]に入る語句を選んでください。',
+    choices: ['will transfer', 'transferring', 'having transferred', 'to be transferred'],
+    a: 0, exp: '主節の述語動詞が必要で、10月1日以降の話なので未来形。他は述語動詞になれない。'
+  },
+  {
+    id: 'p6_004_q3', part: 6, passageId: 'p6_004', blankNum: 133, cat: 'reading',
+    q: '空所[133]に入る最も適切な文を選んでください。',
+    choices: [
+      'The portal will be unavailable from 6:00 P.M. on 30 September until 8:00 A.M. on 1 October.',
+      'Our warehouse in the eastern district was expanded earlier this year.',
+      'Printed catalogs are no longer mailed to suppliers on a quarterly basis.',
+      'Payment terms for all purchase orders remain unchanged at thirty days.'
+    ],
+    a: 0, exp: '直後に「その期間中は注文をメールで送ってよい」とあるため、ポータルが使えない時間帯を示す文が入る。'
+  },
+  {
+    id: 'p6_004_q4', part: 6, passageId: 'p6_004', blankNum: 134, cat: 'gerund',
+    q: '空所[134]に入る語句を選んでください。',
+    choices: ['before', 'in order to', 'so that', 'as soon as'],
+    a: 0, exp: '後ろが動名詞 placing なので前置詞 before。in order to / so that / as soon as は動名詞を直接取れない。'
+  },
+
+  // ================================================================
+  // PART 7 追加分
+  // ================================================================
+  {
+    id: 'p7_003_q1', part: 7, passageId: 'p7_003', blankNum: null, cat: 'reading',
+    q: 'What is the main purpose of the notice?',
+    choices: [
+      'To inform tenants about a temporary change in parking arrangements',
+      'To announce an increase in monthly parking permit fees',
+      'To introduce a new shuttle service operated by the building',
+      'To request that tenants renew their visitor passes'
+    ],
+    a: 0, exp: '冒頭の「the north parking structure will be closed for resurfacing」より、工事に伴う駐車場の一時変更の通知。'
+  },
+  {
+    id: 'p7_003_q2', part: 7, passageId: 'p7_003', blankNum: null, cat: 'reading',
+    q: 'What is indicated about the south lot?',
+    choices: [
+      'It has fewer spaces than the north structure',
+      'It is reserved exclusively for visitors',
+      'It charges an additional monthly fee',
+      'It will also be resurfaced in June'
+    ],
+    a: 0, exp: '「the south lot has 180 spaces, fewer than the 320 available in the north structure」と明記。'
+  },
+  {
+    id: 'p7_003_q3', part: 7, passageId: 'p7_003', blankNum: null, cat: 'reading',
+    q: 'According to the notice, what can the management office NOT do?',
+    choices: [
+      'Validate parking receipts from Halloway Avenue',
+      'Issue visitor passes for the south lot',
+      'Accept requests made one business day in advance',
+      'Provide information about the closure period'
+    ],
+    a: 0, exp: '「The building management office cannot validate street parking receipts」より、路上駐車の領収書は認証できない。'
+  },
+  {
+    id: 'p7_004_q1', part: 7, passageId: 'p7_004', blankNum: null, cat: 'reading',
+    q: 'Why did Ms. Whitcombe write the e-mail?',
+    choices: [
+      'To register employees and ask for the amount owed',
+      'To cancel a previous registration request',
+      'To apply for membership in the Northfield Association',
+      'To propose a topic for the networking dinner'
+    ],
+    a: 0, exp: '「I would like to register three members」「Could you confirm the total amount due」より、登録と金額確認が目的。'
+  },
+  {
+    id: 'p7_004_q2', part: 7, passageId: 'p7_004', blankNum: null, cat: 'reading',
+    q: 'What rate will Calderon Freight most likely be charged per attendee?',
+    choices: ['$480', '$432', '$360', '$324'],
+    a: 1, exp: 'クロス照合問題。7月入会なので登録時点で会員歴6か月未満→会員料金は不可。標準 $480 に3名以上の10%引きが適用され $432。'
+  },
+  {
+    id: 'p7_004_q3', part: 7, passageId: 'p7_004', blankNum: null, cat: 'reading',
+    q: 'In Text 2, the word "applicable" is closest in meaning to',
+    choices: ['relevant', 'affordable', 'temporary', 'approximate'],
+    a: 0, exp: '「off the applicable rate」は「該当する料金から」の意味なので relevant が最も近い。'
   }
 
 ];

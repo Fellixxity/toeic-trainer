@@ -1,4 +1,4 @@
-'use me strict';
+'use strict';
 /**
  * TOEIC Trainer v2.5
  *  - Web Audio API (効果音)

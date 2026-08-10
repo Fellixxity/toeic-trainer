@@ -99,5 +99,100 @@ Key Topics Covered:
 Special Offer: Register before November 15 to receive an Early Bird Discount of 15% off the standard registration fee. Group discounts are also available for organizations registering three or more employees together.
 
 For complete program details and online registration, please visit our website at www.imi-workshops.org/leadership.`
+  },
+
+  'p6_003': {
+    id: 'p6_003',
+    part: 6,
+    genre: 'email',
+    title: 'オフィス移転の社内メール',
+    text: `To: All Marketing Staff
+From: Facilities Coordination, Verdaline Solutions
+Subject: Relocation to the Fifth Floor
+
+As announced last month, the Marketing Department will be moving to the fifth floor on Saturday, 14 March. Because the move will take place over the weekend, normal operations should not be [131]-------.
+
+Please pack all personal belongings and desk materials into the labeled crates that [132]------- to your workstation this Wednesday. Items left loose on desks cannot be transported by the moving company.
+
+[133]-------. Each unit is numbered, and your key will be distributed by your team leader on Monday morning.
+
+If you require additional crates or have questions about the schedule, contact the Facilities desk at extension 220 [134]------- Friday afternoon.
+
+Thank you for your cooperation.`
+  },
+
+  'p6_004': {
+    id: 'p6_004',
+    part: 6,
+    genre: 'notice',
+    title: '取引先ポータル刷新の通知',
+    text: `NOTICE TO ALL REGISTERED SUPPLIERS
+
+On 1 October, Harrowgate Industrial Supply will launch an upgraded version of its online ordering portal. The new system offers faster order tracking and a [131]------- simpler invoice submission process.
+
+Suppliers will not need to create new accounts. Existing login credentials [132]------- automatically to the upgraded portal. However, all users will be asked to reset their passwords the first time they sign in after the launch date.
+
+[133]-------. During that period, orders may be submitted by e-mail to orders@harrowgatesupply.example.
+
+A recorded training session will be posted on our website in late September. We encourage every account holder to view it [134]------- placing a first order in the new system.
+
+Questions may be directed to the Supplier Relations team.`
+  },
+
+  'p7_003': {
+    id: 'p7_003',
+    part: 7,
+    genre: 'notice',
+    title: '駐車場閉鎖のテナント向け通知',
+    text: `NOTICE TO TENANTS — Riverbend Business Center
+
+Beginning Monday, 5 May, the north parking structure will be closed for resurfacing. The work is expected to last four weeks, and the structure will reopen on Monday, 2 June.
+
+During the closure, tenants holding monthly parking permits may park in the south lot at no additional charge. Please note that the south lot has 180 spaces, fewer than the 320 available in the north structure. For this reason, spaces will be assigned on a first-come, first-served basis, and we strongly encourage carpooling or use of the municipal shuttle, which stops at the main entrance every fifteen minutes between 7:00 A.M. and 9:30 A.M.
+
+Visitors without permits should be directed to the metered street parking on Halloway Avenue. The building management office cannot validate street parking receipts, but visitor passes for the south lot may be requested in advance by contacting the office at least one business day before the visit.
+
+We apologize for the inconvenience and thank you for your patience.`
+  },
+
+  'p7_004': {
+    id: 'p7_004',
+    part: 7,
+    genre: 'email',
+    title: 'ダブルパッセージ: 参加申込メールと参加規約',
+    text: `Text 1
+
+To: Registration Desk, Northfield Logistics Forum
+From: Deanna Whitcombe, Operations Manager, Calderon Freight
+Subject: Registration for three attendees
+Date: 8 September
+
+Hello,
+
+I would like to register three members of our operations team for the Northfield Logistics Forum on 14 November. All three will attend the full two-day program, including the Thursday evening networking dinner.
+
+Our company joined the Northfield Association in July of this year, so I believe we qualify for the reduced rate. I plan to submit payment by company bank transfer on 30 September. Could you confirm the total amount due before that date?
+
+One of our attendees, Mr. Ibarra, uses a wheelchair, so I would appreciate information on accessible seating in the main hall.
+
+Best regards,
+Deanna Whitcombe
+
+
+Text 2
+
+NORTHFIELD LOGISTICS FORUM — REGISTRATION POLICY
+
+Full program (two days, including networking dinner)
+- Standard rate: $480 per attendee
+- Member rate: $360 per attendee
+
+Single-day pass: $250 (dinner not included)
+
+The member rate applies only to employees of organizations that have held Northfield Association membership for at least six months as of the registration date. Groups of three or more registered together receive an additional 10 percent discount off the applicable rate.
+
+Payment must be received no later than 15 October. Registrations paid by bank transfer require an invoice, which the Registration Desk issues within five business days of a request.
+
+Attendees with accessibility requirements should notify the Registration Desk at least thirty days before the event.`
   }
 };
