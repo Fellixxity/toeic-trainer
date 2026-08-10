@@ -31,8 +31,8 @@
   <div id="screen-home" class="screen">
 
     <!-- Auth & Sound Bar -->
-    <div class="user-auth-bar" style="display:flex; justify-space-between; align-items:center; width:100%; max-width:var(--max-w); padding:12px 18px 0;">
-      <div style="display:flex; gap:8px; align-items:center;">
+    <div class="user-auth-bar" style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; width:100%; max-width:var(--max-w); padding:12px 18px 0;">
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
         <button id="sound-toggle-btn" onclick="Sound.toggleMute()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:999px; cursor:pointer; font-size:14px;" title="効果音のON/OFF">🔊</button>
         <button id="timer-toggle-btn" onclick="toggleTimer()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:999px; cursor:pointer; font-size:13px; white-space:nowrap;" title="タイマーのON/OFF">⏱ タイマーON</button>
         <button id="script-toggle-btn" onclick="toggleListeningScript()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:999px; cursor:pointer; font-size:13px; white-space:nowrap;" title="Part 2 で英文を最初から表示するか">📖 スクリプト非表示</button>
@@ -111,6 +111,23 @@
         <div id="chart-container" style="padding:10px 0 0;"></div>
       </div>
 
+      <!-- Category Mastery -->
+      <div class="progress-card" style="margin-top:12px;">
+        <div class="progress-meta">
+          <span class="progress-label">🎯 カテゴリ別の習熟度</span>
+          <span style="font-size:10px; color:var(--text-muted);">正答率が低い順 ・ 直近20問</span>
+        </div>
+        <div id="mastery-list" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- Review Forecast -->
+      <div class="progress-card" style="margin-top:12px;">
+        <div class="progress-meta">
+          <span class="progress-label">🗓 今後7日の復習予定</span>
+        </div>
+        <div id="forecast-list" style="display:flex; gap:6px; margin-top:10px; align-items:flex-end;"></div>
+      </div>
+
       <!-- AI Actions -->
       <div class="ai-actions-grid">
         <button class="btn-ai-action" onclick="openGeminiGenModal()">
@@ -131,6 +148,9 @@
         <button class="btn-start" id="start-btn">
           <span class="btn-start-main">セッション開始 ▶</span>
           <span class="btn-start-sub" id="btn-start-sub"></span>
+        </button>
+        <button class="btn-ai-action" id="weak-btn" onclick="startWeakSession()" style="width:100%; margin-top:8px;">
+          <span>🔥</span> <span id="weak-btn-label">苦手だけ10問</span>
         </button>
         <p class="all-done-msg" id="all-done-msg" style="display:none; text-align:center; color:var(--text-muted); font-size:13px; margin-top:10px;">
           🎉 本日の学習は完了しています！

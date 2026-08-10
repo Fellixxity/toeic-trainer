@@ -342,6 +342,23 @@ function renderHome() {
     chartContainer.innerHTML = Analytics.renderDailyChartSvg(dailyStats);
   }
 
+  renderMastery();
+  renderForecast();
+
+  // 苦手だけモードのラベル（対象がなければ無効化）
+  const weakBtn = document.getElementById('weak-btn');
+  const weakLbl = document.getElementById('weak-btn-label');
+  if (weakBtn) {
+    const weak = getWeakPool();
+    weakBtn.disabled = weak.length === 0;
+    weakBtn.style.opacity = weak.length === 0 ? '0.45' : '1';
+    if (weakLbl) {
+      weakLbl.textContent = weak.length === 0
+        ? '苦手データがまだありません'
+        : `苦手だけ ${Math.min(weak.length, 10)}問（${CAT_NAMES[stats.weakCat] || '間違えた問題'}中心）`;
+    }
+  }
+
   const available = stats.dueReviews.length + stats.newQuestions.length;
   const btn = document.getElementById('start-btn');
   const noMsg = document.getElementById('all-done-msg');
@@ -363,10 +380,107 @@ function renderHome() {
   }
 }
 
+function renderMastery() {
+  const el = document.getElementById('mastery-list');
+  if (!el) return;
+  const rows = Analytics.getCategoryMastery(App.history, App.srsData, QUESTION_BANK, CAT_NAMES);
+  el.innerHTML = rows.map(r => {
+    const acc = r.accuracy;
+    const color = acc === null ? 'var(--text-muted)'
+      : acc >= 80 ? '#22c55e'
+      : acc >= 60 ? '#f59e0b'
+      : '#ef4444';
+    const accLabel = acc === null ? '未着手' : `${acc}%`;
+    const barWidth = acc === null ? 0 : acc;
+    return `
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px;">
+        <span class="cat-badge cat-${r.cat}" style="flex-shrink:0; min-width:104px; text-align:center;">${r.label}</span>
+        <div style="flex:1; height:7px; background:rgba(255,255,255,0.07); border-radius:999px; overflow:hidden;">
+          <div style="width:${barWidth}%; height:100%; background:${color}; border-radius:999px;"></div>
+        </div>
+        <span style="font-size:11px; color:${color}; min-width:38px; text-align:right;">${accLabel}</span>
+        <span style="font-size:10px; color:var(--text-muted); min-width:52px; text-align:right;">🎓${r.graduated}/${r.total}</span>
+      </div>`;
+  }).join('');
+}
+
+function renderForecast() {
+  const el = document.getElementById('forecast-list');
+  if (!el) return;
+  const buckets = Analytics.getReviewForecast(App.srsData, QUESTION_BANK, 7);
+  const max = Math.max(...buckets.map(b => b.count), 1);
+  el.innerHTML = buckets.map(b => {
+    const h = Math.round((b.count / max) * 44);
+    return `
+      <div style="flex:1; text-align:center;">
+        <div style="font-size:10px; color:${b.count ? 'var(--text)' : 'var(--text-muted)'}; margin-bottom:3px;">${b.count || ''}</div>
+        <div style="height:${Math.max(h, 2)}px; background:${b.count ? 'rgba(59,130,246,0.55)' : 'rgba(255,255,255,0.08)'}; border-radius:4px 4px 0 0;"></div>
+        <div style="font-size:9px; color:var(--text-muted); margin-top:3px;">${b.label}</div>
+      </div>`;
+  }).join('');
+}
+
+/**
+ * 苦手だけモードの出題候補
+ * 卒業していない問題のうち、直近で間違えたものと、苦手カテゴリの未卒業問題を集める。
+ */
+function getWeakPool() {
+  const wrongIds = new Set();
+  App.history.slice(-120).forEach(h => { if (!h.correct) wrongIds.add(h.questionId); });
+
+  const mastery = Analytics.getCategoryMastery(App.history, App.srsData, QUESTION_BANK, CAT_NAMES);
+  const weakCats = new Set(
+    mastery.filter(m => m.accuracy !== null && m.accuracy < 80 && m.answered >= 3).map(m => m.cat)
+  );
+
+  return QUESTION_BANK.filter(q => {
+    const r = App.srsData[q.id];
+    if (r && r.status === 'graduated') return false;
+    return wrongIds.has(q.id) || weakCats.has(q.cat);
+  });
+}
+
+function startWeakSession() {
+  const pool = getWeakPool();
+  if (pool.length === 0) return;
+
+  // 過去に間違えた問題を優先し、残りを苦手カテゴリから補充する
+  const wrongIds = new Set();
+  App.history.slice(-120).forEach(h => { if (!h.correct) wrongIds.add(h.questionId); });
+  const missed = shuffle(pool.filter(q => wrongIds.has(q.id)));
+  const rest = shuffle(pool.filter(q => !wrongIds.has(q.id)));
+  const picked = [...missed, ...rest].slice(0, 10);
+
+  launchSession(picked);
+}
+
 function startSession() {
   const questions = buildSession();
   if (questions.length === 0) return;
 
+  App.session = { questions, currentIndex: 0, answered: false, results: [] };
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+/**
+ * 任意の問題配列でセッションを開始する（苦手だけモード用）
+ */
+function launchSession(rawQuestions) {
+  const seenPassages = new Set();
+  const questions = shuffle(rawQuestions).map(q => {
+    let firstOfPassage = false;
+    if (q.passageId) {
+      firstOfPassage = !seenPassages.has(q.passageId);
+      seenPassages.add(q.passageId);
+    }
+    return {
+      ...q,
+      shuffledChoices: shuffle(q.choices.map((text, originalIndex) => ({ text, originalIndex }))),
+      _firstOfPassage: firstOfPassage
+    };
+  });
+  if (questions.length === 0) return;
   App.session = { questions, currentIndex: 0, answered: false, results: [] };
   showScreen('screen-quiz');
   renderQuestion();
@@ -816,6 +930,53 @@ function init() {
   document.getElementById('next-btn')?.addEventListener('click', nextQuestion);
   document.getElementById('home-btn')?.addEventListener('click', () => { stopTimer(); TTS.cancel(); renderHome(); showScreen('screen-home'); });
   document.getElementById('back-btn')?.addEventListener('click', () => { stopTimer(); TTS.cancel(); renderHome(); showScreen('screen-home'); });
+
+  document.addEventListener('keydown', onKeyDown);
+}
+
+/**
+ * キーボード操作
+ *   1-4 / A-D : 選択肢を選ぶ
+ *   Enter / Space : 次の問題へ
+ *   R : リスニングをもう一度再生
+ */
+function onKeyDown(e) {
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'input' || tag === 'textarea') return;
+
+  const quizVisible = document.getElementById('screen-quiz')?.classList.contains('active');
+  if (!quizVisible) return;
+
+  const key = e.key.toLowerCase();
+
+  if (!App.session.answered) {
+    let idx = -1;
+    if (key >= '1' && key <= '4') idx = parseInt(key, 10) - 1;
+    else if (['a', 'b', 'c', 'd'].includes(key)) idx = ['a', 'b', 'c', 'd'].indexOf(key);
+    if (idx >= 0 && idx < (App.session.questions[App.session.currentIndex]?.shuffledChoices.length || 0)) {
+      e.preventDefault();
+      selectAnswer(idx);
+      return;
+    }
+  }
+
+  if (key === 'enter' || key === ' ') {
+    const nextBtn = document.getElementById('next-btn');
+    if (nextBtn && !nextBtn.classList.contains('hidden')) {
+      e.preventDefault();
+      nextQuestion();
+    }
+    return;
+  }
+
+  if (key === 'r') {
+    const q = App.session.questions[App.session.currentIndex];
+    if (q && q.part === 2) {
+      e.preventDefault();
+      playListening({ autoStart: false });
+    }
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);

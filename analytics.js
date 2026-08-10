@@ -141,6 +141,75 @@ const Analytics = {
     }));
   },
 
+  /**
+   * カテゴリ別の習熟度を集計する
+   * accuracy は直近の実力を見るため最新20件まで、mastery は卒業率。
+   */
+  getCategoryMastery(history, srsData, questionBank, catNames) {
+    const stats = {};
+    questionBank.forEach(q => {
+      const s = stats[q.cat] || (stats[q.cat] = {
+        cat: q.cat, label: catNames[q.cat] || q.cat,
+        total: 0, graduated: 0, attempted: 0, correct: 0, recent: []
+      });
+      s.total++;
+      const r = srsData[q.id];
+      if (r && r.status === 'graduated') s.graduated++;
+      if (r && r.status && r.status !== 'new') s.attempted++;
+    });
+
+    history.forEach(h => {
+      const s = stats[h.category];
+      if (!s) return;
+      s.recent.push(h.correct);
+    });
+
+    return Object.values(stats).map(s => {
+      const recent = s.recent.slice(-20);
+      return {
+        cat: s.cat,
+        label: s.label,
+        total: s.total,
+        graduated: s.graduated,
+        attempted: s.attempted,
+        answered: recent.length,
+        accuracy: recent.length ? Math.round(recent.filter(Boolean).length / recent.length * 100) : null,
+        mastery: s.total ? Math.round(s.graduated / s.total * 100) : 0
+      };
+    }).sort((a, b) => {
+      // 正答率が低い順。未着手は最後にまわす
+      if (a.accuracy === null && b.accuracy === null) return 0;
+      if (a.accuracy === null) return 1;
+      if (b.accuracy === null) return -1;
+      return a.accuracy - b.accuracy;
+    });
+  },
+
+  /**
+   * 今後7日間に何問復習が来るかの見通し
+   */
+  getReviewForecast(srsData, questionBank, daysCount = 7) {
+    const days = this.getPastDays(1).slice(0, 0); // 型合わせ用（未使用）
+    const buckets = [];
+    for (let i = 0; i < daysCount; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      buckets.push({ label: i === 0 ? '今日' : `${d.getMonth() + 1}/${d.getDate()}`, dateStr: this.dateKey(d), count: 0 });
+    }
+    const map = {};
+    buckets.forEach(b => { map[b.dateStr] = b; });
+    const todayKey = this.dateKey();
+
+    questionBank.forEach(q => {
+      const r = srsData[q.id];
+      if (!r || r.status === 'new' || r.status === 'graduated' || !r.nextReview) return;
+      const key = this.dateKey(r.nextReview);
+      if (key <= todayKey) { buckets[0].count++; return; }  // 期限切れは今日にまとめる
+      if (map[key]) map[key].count++;
+    });
+    return buckets;
+  },
+
   renderDailyChartSvg(dailyStats) {
     const width = 320;
     const height = 160;
