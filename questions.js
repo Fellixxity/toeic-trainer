@@ -907,6 +907,122 @@ const QUESTION_BANK = [
     q: 'In Text 2, the word "applicable" is closest in meaning to',
     choices: ['relevant', 'affordable', 'temporary', 'approximate'],
     a: 0, exp: '「off the applicable rate」は「該当する料金から」の意味なので relevant が最も近い。'
+  },
+
+
+  // ================================================================
+  // PART 2 応答問題（リスニング）
+  //   q       : 読み上げられる問いかけ（画面には解答後まで出さない）
+  //   choices : 応答3つ（Part 2 は本番も3択）
+  //   ptype   : 問いかけの種類。解答後のヒント表示に使う
+  // ================================================================
+  {
+    id: 'l001', part: 2, passageId: null, cat: 'listening', ptype: 'wh',
+    q: "Who's giving the safety training on Thursday?",
+    choices: ['Someone from the head office.', 'Yes, I attended it last year.', 'In the third-floor training room.'],
+    a: 0, exp: 'Who疑問文なので「人」を答える。WH疑問文にYes/Noでは答えられない。'
+  },
+  {
+    id: 'l002', part: 2, passageId: null, cat: 'listening', ptype: 'wh',
+    q: 'When does the shuttle bus leave for the airport?',
+    choices: ['From the north entrance.', 'Every twenty minutes.', 'The flight was delayed.'],
+    a: 1, exp: 'When疑問文なので時間・頻度を答える。airport から flight を連想させる引っかけに注意。'
+  },
+  {
+    id: 'l003', part: 2, passageId: null, cat: 'listening', ptype: 'wh',
+    q: 'Where did you put the sales report I printed?',
+    choices: ["It's on your desk, under the folder.", "I'll print another copy tomorrow.", 'Because the printer was out of paper.'],
+    a: 0, exp: 'Where疑問文なので場所を答える。printed/print の同語反復と、Because で始まる誤答が引っかけ。'
+  },
+  {
+    id: 'l004', part: 2, passageId: null, cat: 'listening', ptype: 'wh',
+    q: 'How long will the renovation of the lobby take?',
+    choices: ['About six weeks, they said.', 'Yes, it looks much better now.', 'Take the elevator to the second floor.'],
+    a: 0, exp: 'How long は期間を問う。take の同語反復に釣られないこと。'
+  },
+  {
+    id: 'l005', part: 2, passageId: null, cat: 'listening', ptype: 'yesno',
+    q: 'Have you finished reviewing the budget proposal?',
+    choices: ['The new review process, I think.', "Not yet, but I'm almost done.", 'At the finance department.'],
+    a: 1, exp: 'Yes/No疑問文だが「Not yet」のような部分的な返答が正解になることが多い。'
+  },
+  {
+    id: 'l006', part: 2, passageId: null, cat: 'listening', ptype: 'yesno',
+    q: 'Is the conference room available at two o\'clock?',
+    choices: ['Let me check the schedule.', "She's a very good speaker.", "No, I didn't book the flight."],
+    a: 0, exp: 'Yes/Noを言わない間接応答が正解。「確認します」型の返答に慣れること。'
+  },
+  {
+    id: 'l007', part: 2, passageId: null, cat: 'listening', ptype: 'yesno',
+    q: 'Did you get the email about the parking permit?',
+    choices: ['Yes, I parked in the garage.', "I haven't checked my inbox yet.", 'The permanent staff only.'],
+    a: 1, exp: '間接応答が正解。parking/parked の同語反復、permit/permanent の類似音が引っかけ。'
+  },
+  {
+    id: 'l008', part: 2, passageId: null, cat: 'listening', ptype: 'statement',
+    q: 'This copier keeps jamming again.',
+    choices: ["I'll call the maintenance company.", 'Yes, I have a copy of it.', 'In the supply closet.'],
+    a: 0, exp: '平叙文（不満・報告）には解決策を申し出る応答が自然。copier/copy の類似音が引っかけ。'
+  },
+  {
+    id: 'l009', part: 2, passageId: null, cat: 'listening', ptype: 'statement',
+    q: 'I thought the workshop was really useful.',
+    choices: ["It's on the fourth floor.", 'So did I, especially the last part.', "No, I don't work there anymore."],
+    a: 1, exp: '感想を述べる平叙文には同意の「So did I」。thought に呼応する形。'
+  },
+  {
+    id: 'l010', part: 2, passageId: null, cat: 'listening', ptype: 'statement',
+    q: "We're running low on printer paper.",
+    choices: ["I'll order some this afternoon.", 'Yes, I ran to the station.', 'The paper was published last month.'],
+    a: 0, exp: '在庫不足を伝える平叙文には対応を申し出る応答。running/ran、paper の別義が引っかけ。'
+  },
+  {
+    id: 'l011', part: 2, passageId: null, cat: 'listening', ptype: 'choice',
+    q: 'Should I send the invoice by email or by mail?',
+    choices: ['Yes, please send it.', 'Email is faster.', 'He sent it yesterday.'],
+    a: 1, exp: 'A or B の選択疑問文には原則Yes/Noで答えられない。どちらかを選ぶ応答が正解。'
+  },
+  {
+    id: 'l012', part: 2, passageId: null, cat: 'listening', ptype: 'choice',
+    q: 'Do you want to meet before lunch or after?',
+    choices: ['At the new restaurant downtown.', 'After would be better for me.', 'No, I already ate.'],
+    a: 1, exp: '選択疑問文。before か after のどちらかを選ぶ。lunch からの連想語に注意。'
+  },
+  {
+    id: 'l013', part: 2, passageId: null, cat: 'listening', ptype: 'choice',
+    q: 'Is the training online or in person this year?',
+    choices: ['Both, actually.', 'Yes, I signed up already.', 'She trains new employees.'],
+    a: 0, exp: '選択疑問文には「Both」「Either」といった第三の答えもよく使われる。'
+  },
+  {
+    id: 'l014', part: 2, passageId: null, cat: 'listening', ptype: 'tag',
+    q: "You've met our new manager, haven't you?",
+    choices: ['Yes, at the staff meeting on Monday.', "The manager's office is upstairs.", "I'll manage it myself."],
+    a: 0, exp: '付加疑問文は普通のYes/No疑問文と同じように答える。haven\'t you? に惑わされない。'
+  },
+  {
+    id: 'l015', part: 2, passageId: null, cat: 'listening', ptype: 'tag',
+    q: "The store closes at eight, doesn't it?",
+    choices: ["It's quite close to here.", "Actually, it's open until nine.", "No, I didn't buy anything."],
+    a: 1, exp: '付加疑問文への訂正応答。Yes/Noを使わず事実を訂正するパターン。closes/close の類似音に注意。'
+  },
+  {
+    id: 'l016', part: 2, passageId: null, cat: 'listening', ptype: 'request',
+    q: 'Would you mind covering the front desk for an hour?',
+    choices: ["Not at all, I'm free until three.", 'Yes, the cover is on the desk.', "It costs about an hour's pay."],
+    a: 0, exp: 'Would you mind〜? への承諾は「Not at all」。No系の返答が承諾になる点が最重要。'
+  },
+  {
+    id: 'l017', part: 2, passageId: null, cat: 'listening', ptype: 'request',
+    q: "Why don't we take the earlier train tomorrow?",
+    choices: ['Because it was crowded.', "That's a good idea.", "He's training the interns."],
+    a: 1, exp: "Why don't we〜? は提案表現で理由を聞いていない。Because で答えるのは誤り。"
+  },
+  {
+    id: 'l018', part: 2, passageId: null, cat: 'listening', ptype: 'request',
+    q: "Could you forward me the client's contact information?",
+    choices: ["Sure, I'll do it right now.", 'The contract expires in June.', 'Yes, they moved forward with it.'],
+    a: 0, exp: 'Could you〜? は依頼表現。承諾の「Sure」が自然。contact/contract の類似音が引っかけ。'
   }
 
 ];

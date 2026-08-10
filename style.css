@@ -448,6 +448,10 @@ body::before {
 .cat-gerund { background: rgba(249,115,22,0.2); color: #fb923c; }
 .cat-colloc { background: rgba(236,72,153,0.2); color: #f472b6; }
 .cat-reading { background: rgba(245,158,11,0.2); color: #fbbf24; }
+.cat-listening { background: rgba(20,184,166,0.2); color: #2dd4bf; }
+
+#audio-bar.hidden { display: none !important; }
+#replay-btn:disabled { opacity: 0.45; cursor: default; }
 
 .btn-next {
   width: 100%;

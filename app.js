@@ -1,12 +1,23 @@
 'use strict';
 
 const CAT_NAMES = {
-  pos:     '品詞',
-  prep:    '前置詞・接続詞',
-  gram:    '文法一般',
-  gerund:  '前置詞+動名詞',
-  colloc:  '語彙コロケーション',
-  reading: '長文読解',
+  pos:       '品詞',
+  prep:      '前置詞・接続詞',
+  gram:      '文法一般',
+  gerund:    '前置詞+動名詞',
+  colloc:    '語彙コロケーション',
+  reading:   '長文読解',
+  listening: 'リスニング応答',
+};
+
+// Part 2 の問いかけの型（解答後のヒント表示に使う）
+const PTYPE_NAMES = {
+  wh:        'WH疑問文',
+  yesno:     'Yes/No疑問文',
+  statement: '平叙文',
+  choice:    '選択疑問文',
+  tag:       '付加疑問文',
+  request:   '依頼・提案',
 };
 
 /**
@@ -14,7 +25,7 @@ const CAT_NAMES = {
  * 本番の目安は Part 5 が20〜30秒、Part 7 は1問1分＋本文を読む時間。
  * 全Part一律45秒だと長文が明らかに足りないため Part 別に持つ。
  */
-const TIMER_BY_PART = { 5: 45, 6: 60, 7: 90 };
+const TIMER_BY_PART = { 2: 20, 5: 45, 6: 60, 7: 90 };
 const TIMER_DEFAULT = 45;
 // パッセージの1問目には本文を読む時間を加算する
 const PASSAGE_READ_BONUS = 60;
@@ -23,8 +34,9 @@ const TIMER_CIRCUMFERENCE = 138.23;
 const App = {
   srsData: {},
   history: [],
-  selectedPart: 5, // 5, 6, 7, 'mix'
+  selectedPart: 5, // 2, 5, 6, 7, 'mix'
   timerEnabled: true,
+  listeningShowScript: false,
 
   session: {
     questions: [],
@@ -395,28 +407,130 @@ function renderQuestion() {
     passageCard.classList.add('hidden');
   }
 
-  // 問題文
+  const isListening = q.part === 2;
+  const showScript = isListening && App.listeningShowScript;
+
+  // 問題文（リスニングは解答するまで本文を見せない）
   const qText = document.getElementById('question-card');
   if (qText) {
-    qText.innerHTML = `<p class="q-text">${(q.q || '空所に最も適切な選択肢を選んでください。').replace('-------', '<span class="blank">_______</span>')}</p>`;
+    const body = isListening && !showScript
+      ? '<p class="q-text" style="color:var(--text-muted);">🎧 音声を聞いて、最も適切な応答を選んでください。</p>'
+      : `<p class="q-text">${(q.q || '空所に最も適切な選択肢を選んでください。').replace('-------', '<span class="blank">_______</span>')}</p>`;
+    qText.innerHTML = body;
   }
+
+  // リスニング用の再生コントロール
+  const audioBar = document.getElementById('audio-bar');
+  if (audioBar) audioBar.classList.toggle('hidden', !isListening);
 
   const LABELS = ['A', 'B', 'C', 'D'];
   const choicesEl = document.getElementById('choices');
   if (choicesEl) {
-    choicesEl.innerHTML = q.shuffledChoices.map((c, i) => `
+    choicesEl.innerHTML = q.shuffledChoices.map((c, i) => {
+      // リスニングでは選択肢も音声のみ。解答後にスクリプトを出す
+      const label = (isListening && !showScript) ? '（音声）' : c.text;
+      return `
       <button class="choice-btn" id="choice-${i}" onclick="selectAnswer(${i})">
         <span class="choice-label">${LABELS[i]}</span>
-        <span class="choice-text">${c.text}</span>
+        <span class="choice-text" id="choice-text-${i}">${label}</span>
       </button>
-    `).join('');
+    `;
+    }).join('');
   }
 
   document.getElementById('answer-reveal')?.classList.add('hidden');
   document.getElementById('next-btn')?.classList.add('hidden');
 
   App.session.questionStartTime = Date.now();
-  startTimer(getTimerSeconds(q));
+
+  if (isListening) {
+    // 音声が流れ終わってから制限時間を数え始める（読み上げ中に切れないように）
+    playListening({ autoStart: true });
+  } else {
+    TTS.cancel();
+    startTimer(getTimerSeconds(q));
+  }
+}
+
+/**
+ * Part 2 の音声を再生する。問いかけ → (A) → (B) → (C) の順。
+ */
+function playListening(opts = {}) {
+  const q = App.session.questions[App.session.currentIndex];
+  if (!q || q.part !== 2) return;
+
+  stopTimer();
+  const btn = document.getElementById('replay-btn');
+  const status = document.getElementById('audio-status');
+  if (btn) btn.disabled = true;
+
+  const LABELS = ['A', 'B', 'C', 'D'];
+  const items = [
+    { text: q.q, pauseAfterMs: 900 },
+    ...q.shuffledChoices.map((c, i) => ({
+      text: `${LABELS[i]}. ${c.text}`,
+      pauseAfterMs: 700
+    }))
+  ];
+
+  TTS.speakSequence(items, {
+    onItem: (i) => {
+      if (!status) return;
+      status.textContent = i === 0 ? '🔊 問いかけを再生中…' : `🔊 応答 ${LABELS[i - 1]} を再生中…`;
+    },
+    onEnd: () => {
+      if (btn) btn.disabled = false;
+      if (status) status.textContent = '再生が終わりました。もう一度聞くには ↻ を押してください。';
+      // 解答済みなら数え直さない
+      if (!App.session.answered && opts.autoStart !== false) {
+        startTimer(getTimerSeconds(q));
+      }
+    }
+  });
+}
+
+function toggleListeningScript() {
+  App.listeningShowScript = !App.listeningShowScript;
+  localStorage.setItem('toeic_listening_script', JSON.stringify(App.listeningShowScript));
+  updateListeningScriptUI();
+  // 出題中なら表示を切り替える
+  const q = App.session.questions[App.session.currentIndex];
+  if (q && q.part === 2 && !App.session.answered) {
+    const showScript = App.listeningShowScript;
+    const card = document.getElementById('question-card');
+    if (card) {
+      card.innerHTML = showScript
+        ? `<p class="q-text">${q.q}</p>`
+        : '<p class="q-text" style="color:var(--text-muted);">🎧 音声を聞いて、最も適切な応答を選んでください。</p>';
+    }
+    q.shuffledChoices.forEach((c, i) => {
+      const el = document.getElementById(`choice-text-${i}`);
+      if (el) el.textContent = showScript ? c.text : '（音声）';
+    });
+  }
+}
+
+function updateListeningScriptUI() {
+  const btn = document.getElementById('script-toggle-btn');
+  if (!btn) return;
+  btn.textContent = App.listeningShowScript ? '📖 スクリプト表示中' : '📖 スクリプト非表示';
+  btn.style.opacity = App.listeningShowScript ? '1' : '0.55';
+}
+
+function cycleTtsRate() {
+  const rates = [0.75, 0.9, 1.0];
+  const cur = TTS.getRate();
+  const next = rates[(rates.indexOf(cur) + 1) % rates.length] || 0.9;
+  TTS.setRate(next);
+  updateTtsRateUI();
+}
+
+function updateTtsRateUI() {
+  const btn = document.getElementById('rate-btn');
+  if (!btn) return;
+  const r = TTS.getRate();
+  const label = r <= 0.75 ? 'ゆっくり' : (r >= 1.0 ? '本番速度' : '標準');
+  btn.textContent = `🐢 ${label}`;
 }
 
 function selectAnswer(selectedIdx) {
@@ -499,6 +613,22 @@ function renderAnswerFeedback(selectedIdx, isCorrect, timeExpired) {
       badge.textContent = '✗ 不正解';
       badge.className = 'result-badge wrong';
     }
+  }
+
+  // リスニングは解答後にスクリプトを開示する（復習できないと意味がないため）
+  if (q.part === 2) {
+    TTS.cancel();
+    const card = document.getElementById('question-card');
+    if (card) {
+      const ptype = PTYPE_NAMES[q.ptype] ? `<span style="font-size:12px; color:var(--text-muted);">問いかけの型: ${PTYPE_NAMES[q.ptype]}</span><br>` : '';
+      card.innerHTML = `${ptype}<p class="q-text">${q.q}</p>`;
+    }
+    q.shuffledChoices.forEach((c, i) => {
+      const el = document.getElementById(`choice-text-${i}`);
+      if (el) el.textContent = c.text;
+    });
+    const status = document.getElementById('audio-status');
+    if (status) status.textContent = '↻ でもう一度聞けます（スクリプトを見ながら音を確認しましょう）';
   }
 
   let srsMsg = '';
@@ -671,17 +801,21 @@ function init() {
   try {
     const saved = localStorage.getItem('toeic_timer_enabled');
     if (saved !== null) App.timerEnabled = JSON.parse(saved);
-  } catch (_) { /* 既定の ON のまま */ }
+    const script = localStorage.getItem('toeic_listening_script');
+    if (script !== null) App.listeningShowScript = JSON.parse(script);
+  } catch (_) { /* 既定値のまま */ }
   Sound.init();
   Auth.init();
   updateTimerToggleUI();
+  updateListeningScriptUI();
+  updateTtsRateUI();
   renderHome();
   showScreen('screen-home');
 
   document.getElementById('start-btn')?.addEventListener('click', startSession);
   document.getElementById('next-btn')?.addEventListener('click', nextQuestion);
-  document.getElementById('home-btn')?.addEventListener('click', () => { stopTimer(); renderHome(); showScreen('screen-home'); });
-  document.getElementById('back-btn')?.addEventListener('click', () => { stopTimer(); renderHome(); showScreen('screen-home'); });
+  document.getElementById('home-btn')?.addEventListener('click', () => { stopTimer(); TTS.cancel(); renderHome(); showScreen('screen-home'); });
+  document.getElementById('back-btn')?.addEventListener('click', () => { stopTimer(); TTS.cancel(); renderHome(); showScreen('screen-home'); });
 }
 
 document.addEventListener('DOMContentLoaded', init);

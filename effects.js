@@ -124,26 +124,93 @@ const Sound = {
 
 // Web Speech API (ネイティブ英語読み上げ)
 const TTS = {
+  available() {
+    return 'speechSynthesis' in window;
+  },
+
+  /**
+   * 読み上げ速度。0.75(ゆっくり) / 0.9(標準) / 1.0(本番相当)
+   * 本番のTOEICは概ね等速なので、慣れてきたら上げる想定。
+   */
+  getRate() {
+    const v = parseFloat(localStorage.getItem('toeic_tts_rate'));
+    return Number.isFinite(v) ? v : 0.9;
+  },
+
+  setRate(rate) {
+    localStorage.setItem('toeic_tts_rate', String(rate));
+  },
+
+  pickVoice() {
+    const voices = window.speechSynthesis.getVoices() || [];
+    return voices.find(v => /^en[-_]US/i.test(v.lang) && /Google|Natural|Samantha|Zira|Aria/i.test(v.name))
+        || voices.find(v => /^en[-_]US/i.test(v.lang))
+        || voices.find(v => /^en/i.test(v.lang))
+        || null;
+  },
+
+  makeUtterance(text, opts = {}) {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US';
+    u.rate = opts.rate || this.getRate();
+    u.pitch = opts.pitch || 1.0;
+    const voice = this.pickVoice();
+    if (voice) u.voice = voice;
+    return u;
+  },
+
   speak(text) {
-    if (!('speechSynthesis' in window)) {
+    if (!this.available()) {
       alert('お使いのブラウザは音声読み上げに対応していません。');
       return;
     }
-    window.speechSynthesis.cancel(); // 前の音声をクリア
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(this.makeUtterance(text));
+  },
 
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'en-US';
-    u.rate = 0.9; // 少し落ち着いたスピード
-    u.pitch = 1.0;
+  cancel() {
+    if (this.available()) window.speechSynthesis.cancel();
+  },
 
-    // ネイティブ音声を優先選択
-    const voices = window.speechSynthesis.getVoices();
-    const enVoice = voices.find(v => v.lang.includes('en') && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Samantha')));
-    if (enVoice) u.voice = enVoice;
+  /**
+   * 複数の文を間を空けて順に読み上げる（Part 2 の問いかけ→応答A/B/C 用）
+   * @param {Array<{text:string, pauseAfterMs?:number, pitch?:number}>} items
+   * @param {{onEnd?:Function, onItem?:Function}} handlers
+   */
+  speakSequence(items, handlers = {}) {
+    if (!this.available()) {
+      alert('お使いのブラウザは音声読み上げに対応していません。');
+      if (handlers.onEnd) handlers.onEnd();
+      return;
+    }
+    window.speechSynthesis.cancel();
 
-    window.speechSynthesis.speak(u);
+    let i = 0;
+    const next = () => {
+      if (i >= items.length) {
+        if (handlers.onEnd) handlers.onEnd();
+        return;
+      }
+      const item = items[i];
+      if (handlers.onItem) handlers.onItem(i, item);
+      const u = this.makeUtterance(item.text, { pitch: item.pitch });
+      u.onend = () => {
+        i++;
+        const wait = item.pauseAfterMs != null ? item.pauseAfterMs : 500;
+        setTimeout(next, wait);
+      };
+      // 読み上げに失敗しても止まらないよう次へ進める
+      u.onerror = () => { i++; setTimeout(next, 200); };
+      window.speechSynthesis.speak(u);
+    };
+    next();
   }
 };
+
+// 一部ブラウザは初回 getVoices() が空なので、読み込み完了時に取り直す
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = () => { /* キャッシュせず都度取得するため何もしない */ };
+}
 
 // Canvas 紙吹雪 (Confetti) アニメーション
 const Confetti = {

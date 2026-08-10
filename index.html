@@ -35,6 +35,8 @@
       <div style="display:flex; gap:8px; align-items:center;">
         <button id="sound-toggle-btn" onclick="Sound.toggleMute()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:999px; cursor:pointer; font-size:14px;" title="効果音のON/OFF">🔊</button>
         <button id="timer-toggle-btn" onclick="toggleTimer()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:999px; cursor:pointer; font-size:13px; white-space:nowrap;" title="タイマーのON/OFF">⏱ タイマーON</button>
+        <button id="script-toggle-btn" onclick="toggleListeningScript()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:999px; cursor:pointer; font-size:13px; white-space:nowrap;" title="Part 2 で英文を最初から表示するか">📖 スクリプト非表示</button>
+        <button id="rate-btn" onclick="cycleTtsRate()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:999px; cursor:pointer; font-size:13px; white-space:nowrap;" title="読み上げ速度">🐢 標準</button>
       </div>
       <div id="user-auth-area"></div>
     </div>
@@ -49,6 +51,7 @@
 
       <!-- Part Selector Tabs -->
       <div class="part-selector">
+        <button class="part-tab" data-part="2" onclick="selectPartTab(2)">🎧 Part 2</button>
         <button class="part-tab active" data-part="5" onclick="selectPartTab(5)">Part 5</button>
         <button class="part-tab" data-part="6" onclick="selectPartTab(6)">Part 6</button>
         <button class="part-tab" data-part="7" onclick="selectPartTab(7)">Part 7</button>
@@ -167,6 +170,12 @@
       
       <div class="cat-row" style="margin-bottom:10px;">
         <span class="cat-badge cat-pos" id="q-cat">品詞</span>
+      </div>
+
+      <!-- Part 2 リスニング再生バー -->
+      <div class="hidden" id="audio-bar" style="display:flex; align-items:center; gap:10px; background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; margin-bottom:12px;">
+        <button id="replay-btn" onclick="playListening({autoStart:false})" style="background:var(--blue, #3b82f6); color:#fff; border:none; border-radius:999px; width:40px; height:40px; font-size:17px; cursor:pointer; flex-shrink:0;" title="もう一度再生">↻</button>
+        <span id="audio-status" style="font-size:12px; color:var(--text-muted); line-height:1.5;">🔊 再生中…</span>
       </div>
 
       <!-- Part 6 / 7 Passage Area -->
