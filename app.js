@@ -9,13 +9,22 @@ const CAT_NAMES = {
   reading: '長文読解',
 };
 
-const TIMER_SECONDS = 45;
+/**
+ * Part ごとの制限時間（秒）
+ * 本番の目安は Part 5 が20〜30秒、Part 7 は1問1分＋本文を読む時間。
+ * 全Part一律45秒だと長文が明らかに足りないため Part 別に持つ。
+ */
+const TIMER_BY_PART = { 5: 45, 6: 60, 7: 90 };
+const TIMER_DEFAULT = 45;
+// パッセージの1問目には本文を読む時間を加算する
+const PASSAGE_READ_BONUS = 60;
 const TIMER_CIRCUMFERENCE = 138.23;
 
 const App = {
   srsData: {},
   history: [],
   selectedPart: 5, // 5, 6, 7, 'mix'
+  timerEnabled: true,
 
   session: {
     questions: [],
@@ -26,9 +35,19 @@ const App = {
 
   timer: {
     id: null,
-    timeLeft: TIMER_SECONDS
+    timeLeft: TIMER_DEFAULT,
+    total: TIMER_DEFAULT
   }
 };
+
+/**
+ * その問題の持ち時間を返す
+ * @param {object} q セッション中の問題（_firstOfPassage が付く場合がある）
+ */
+function getTimerSeconds(q) {
+  const base = TIMER_BY_PART[q.part] || TIMER_DEFAULT;
+  return q._firstOfPassage ? base + PASSAGE_READ_BONUS : base;
+}
 
 function loadData() {
   try {
@@ -172,11 +191,19 @@ function buildSession() {
 
   pool = shuffle(pool);
 
+  // 同じパッセージの何問目かを見て、最初の1問にだけ読む時間を足す
+  const seenPassages = new Set();
+
   return pool.map(q => {
     const shuffledChoices = shuffle(
       q.choices.map((text, originalIndex) => ({ text, originalIndex }))
     );
-    return { ...q, shuffledChoices };
+    let firstOfPassage = false;
+    if (q.passageId) {
+      firstOfPassage = !seenPassages.has(q.passageId);
+      seenPassages.add(q.passageId);
+    }
+    return { ...q, shuffledChoices, _firstOfPassage: firstOfPassage };
   });
 }
 
@@ -189,9 +216,19 @@ function showScreen(id) {
   requestAnimationFrame(() => el.classList.add('entering'));
 }
 
-function startTimer() {
+function startTimer(seconds) {
   stopTimer();
-  App.timer.timeLeft = TIMER_SECONDS;
+  const container = document.getElementById('timer-container');
+
+  // タイマーOFF のときは時間切れにせず、表示も隠す
+  if (!App.timerEnabled) {
+    if (container) container.style.visibility = 'hidden';
+    return;
+  }
+  if (container) container.style.visibility = 'visible';
+
+  App.timer.total = seconds || TIMER_DEFAULT;
+  App.timer.timeLeft = App.timer.total;
   updateTimerUI();
 
   App.timer.id = setInterval(() => {
@@ -202,6 +239,23 @@ function startTimer() {
       onTimeExpired();
     }
   }, 1000);
+}
+
+function toggleTimer() {
+  App.timerEnabled = !App.timerEnabled;
+  localStorage.setItem('toeic_timer_enabled', JSON.stringify(App.timerEnabled));
+  updateTimerToggleUI();
+  if (!App.timerEnabled) stopTimer();
+}
+
+function updateTimerToggleUI() {
+  const btn = document.getElementById('timer-toggle-btn');
+  if (!btn) return;
+  btn.textContent = App.timerEnabled ? '⏱ タイマーON' : '⏱ タイマーOFF';
+  btn.style.opacity = App.timerEnabled ? '1' : '0.55';
+  btn.title = App.timerEnabled
+    ? 'タイマーOFFにする（じっくり解く）'
+    : 'タイマーONにする（本番と同じ時間制限）';
 }
 
 function stopTimer() {
@@ -217,7 +271,7 @@ function updateTimerUI() {
   const text = document.getElementById('timer-text');
   if (!ring || !text) return;
 
-  const pct = Math.max(0, t / TIMER_SECONDS);
+  const pct = Math.max(0, t / (App.timer.total || TIMER_DEFAULT));
   ring.style.strokeDashoffset = TIMER_CIRCUMFERENCE * (1 - pct);
   text.textContent = t;
 
@@ -242,6 +296,14 @@ function renderHome() {
 
   setText('due-count', stats.dueReviews.length);
   setText('new-count', stats.newQuestions.length);
+
+  // 復習が1セッション（10問）に収まらないときは消化ペースが分かるよう補足する
+  const dueNote = document.getElementById('due-note');
+  if (dueNote) {
+    dueNote.textContent = stats.dueReviews.length > 10
+      ? `うち10問を出題`
+      : '';
+  }
 
   // 学習時間表示
   const timeStats = Analytics.getStudyTimeStats(App.history);
@@ -354,7 +416,7 @@ function renderQuestion() {
   document.getElementById('next-btn')?.classList.add('hidden');
 
   App.session.questionStartTime = Date.now();
-  startTimer();
+  startTimer(getTimerSeconds(q));
 }
 
 function selectAnswer(selectedIdx) {
@@ -606,8 +668,13 @@ function speakCurrentQuestion() {
 
 function init() {
   loadData();
+  try {
+    const saved = localStorage.getItem('toeic_timer_enabled');
+    if (saved !== null) App.timerEnabled = JSON.parse(saved);
+  } catch (_) { /* 既定の ON のまま */ }
   Sound.init();
   Auth.init();
+  updateTimerToggleUI();
   renderHome();
   showScreen('screen-home');
 

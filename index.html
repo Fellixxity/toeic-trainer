@@ -32,7 +32,10 @@
 
     <!-- Auth & Sound Bar -->
     <div class="user-auth-bar" style="display:flex; justify-space-between; align-items:center; width:100%; max-width:var(--max-w); padding:12px 18px 0;">
-      <button id="sound-toggle-btn" onclick="Sound.toggleMute()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:999px; cursor:pointer; font-size:14px;" title="効果音のON/OFF">🔊</button>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button id="sound-toggle-btn" onclick="Sound.toggleMute()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:999px; cursor:pointer; font-size:14px;" title="効果音のON/OFF">🔊</button>
+        <button id="timer-toggle-btn" onclick="toggleTimer()" style="background:var(--bg-card); border:1px solid var(--border); color:var(--text); padding:6px 12px; border-radius:999px; cursor:pointer; font-size:13px; white-space:nowrap;" title="タイマーのON/OFF">⏱ タイマーON</button>
+      </div>
       <div id="user-auth-area"></div>
     </div>
 
@@ -57,6 +60,7 @@
         <div class="stat-card" id="stat-due">
           <div class="stat-value" id="due-count">0</div>
           <div class="stat-label">今日の復習</div>
+          <div id="due-note" style="font-size:10px; color:var(--text-muted); margin-top:2px;"></div>
         </div>
         <div class="stat-card" id="stat-new">
           <div class="stat-value" id="new-count">0</div>
