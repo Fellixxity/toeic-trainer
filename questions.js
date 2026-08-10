@@ -16,7 +16,7 @@
 const QUESTION_BANK = [
 
   // ================================================================
-  // PART 5 (31問)
+  // PART 5 (47問)
   // ================================================================
   {
     id: 'p001', part: 5, passageId: null, cat: 'pos',
@@ -203,6 +203,138 @@ const QUESTION_BANK = [
     q: 'After months of intensive research, the development team finally ------- a major breakthrough.',
     choices: ['did', 'made', 'got', 'achieved'],
     a: 3, exp: '"achieve a breakthrough"（突破口を開く）格調高い表現。'
+  },
+
+  // 仮定法現在（suggest/recommend/request/ask/require/demand/insist that + 原形）
+  {
+    id: 'g007', part: 5, passageId: null, cat: 'gram',
+    q: 'Ms. Vega insisted that the original schedule ------- in place.',
+    choices: ['remain', 'remains', 'be remained', 'remained'],
+    a: 0, exp: 'insist that + 原形。remain は自動詞（= stay）なので be remained は存在しない。remain unchanged / remain in place / remain open を塊で暗記。'
+  },
+  {
+    id: 'g008', part: 5, passageId: null, cat: 'gram',
+    q: 'The client requested that the invoice ------- by e-mail instead of post.',
+    choices: ['be sent', 'send', 'sends', 'is sent'],
+    a: 0, exp: 'request that + 原形。invoice は送「られる」側 → be + 過去分詞。原形と be+p.p. が両方あるときだけ態を1秒考える。'
+  },
+
+  // 語彙コロケーション（追加分）
+  {
+    id: 'v008', part: 5, passageId: null, cat: 'colloc',
+    q: 'Please ------- that all windows are locked before leaving the office.',
+    choices: ['ensure', 'insure', 'assure', 'reassure'],
+    a: 0, exp: 'ensure=確実にする / insure=保険をかける / assure+人=安心させる。assure の直後は必ず人。'
+  },
+  {
+    id: 'v009', part: 5, passageId: null, cat: 'colloc',
+    q: 'The warranty does not cover damage caused by improper -------.',
+    choices: ['handling', 'holding', 'touching', 'carrying'],
+    a: 0, exp: 'improper handling =「不適切な取り扱い」。warranty の除外条件で頻出。'
+  },
+  {
+    id: 'v010', part: 5, passageId: null, cat: 'colloc',
+    q: 'All product designs must receive final ------- from the creative director.',
+    choices: ['approval', 'approving', 'approve', 'approvingly'],
+    a: 0, exp: 'receive の目的語 → 名詞 approval。receive / obtain / grant approval のセット。'
+  },
+  {
+    id: 'v011', part: 5, passageId: null, cat: 'colloc',
+    q: 'We regret to inform you that the model you ordered has been -------.',
+    choices: ['discontinued', 'interrupted', 'suspended', 'expired'],
+    a: 0, exp: 'discontinued=生産終了（再入荷なし）。out of stock=一時的在庫切れ、と区別。regret to inform は悪いニュースの枕詞。'
+  },
+  {
+    id: 'v012', part: 5, passageId: null, cat: 'colloc',
+    q: 'Ms. Ando has extensive ------- in international contract law.',
+    choices: ['expertise', 'expert', 'expertly', 'experts'],
+    a: 0, exp: 'extensive expertise =「豊富な専門知識」（不可算）。expert は人。注意: have proven ------- の形では proven は形容詞（実証済みの）で have は本動詞「持つ」。現在完了と読み違えて副詞を選ばない（proven track record / proven method と同類）。'
+  },
+  {
+    id: 'v013', part: 5, passageId: null, cat: 'colloc',
+    q: 'The airline will ------- passengers for meals if flights are delayed overnight.',
+    choices: ['compensate', 'precede', 'estimate', 'negotiate'],
+    a: 0, exp: 'compensate + 人 + for =「補償する」。reimburse=立替精算、compensate=損害への埋め合わせ。'
+  },
+  {
+    id: 'v014', part: 5, passageId: null, cat: 'colloc',
+    q: 'Customers who spend over $100 are ------- to free shipping.',
+    choices: ['entitled', 'deserved', 'qualified', 'permitted'],
+    a: 0, exp: 'be entitled to + 名詞 =「〜の権利がある」。特典系名詞（refund / discount / free shipping）が続く。qualified は for。'
+  },
+  {
+    id: 'v015', part: 5, passageId: null, cat: 'colloc',
+    q: 'Please review the ------- agenda before tomorrow\'s board meeting.',
+    choices: ['enclosed', 'closed', 'inclusive', 'included'],
+    a: 0, exp: 'enclosed =「同封の」（郵便）。メールなら attached（添付の）。ペアで暗記。'
+  },
+
+  // 言い換え（TOEIC頻出パラフレーズ。Part 7 の正解選択肢はほぼこの形）
+  {
+    id: 'v016', part: 5, passageId: null, cat: 'colloc',
+    q: '"Training will be provided to all new employees." 言い換えると？',
+    choices: [
+      'New hires can learn the skills on the job',
+      'Applicants must already be fully trained',
+      'Only experienced staff will be hired',
+      'Employees must pay for their own training'
+    ],
+    a: 0, exp: 'training will be provided = learn on the job。「未経験でも入社後に学べる」のサイン。'
+  },
+  {
+    id: 'v017', part: 5, passageId: null, cat: 'colloc',
+    q: '"Applications received after May 1 will not be considered." 言い換えると？',
+    choices: [
+      'Late applications will be rejected',
+      'All applications will be reviewed by May 1',
+      'Applications must be revised after May 1',
+      'Early applications receive a discount'
+    ],
+    a: 0, exp: 'not be considered = be rejected。「検討されない」=「不合格」。'
+  },
+  {
+    id: 'v018', part: 5, passageId: null, cat: 'colloc',
+    q: '"Our products are reasonably priced." 言い換えると？',
+    choices: [
+      'The products are affordable',
+      'The products are of poor quality',
+      'The prices change frequently',
+      'The products are expensive but durable'
+    ],
+    a: 0, exp: 'reasonably priced = affordable = inexpensive（手頃な価格）。'
+  },
+  {
+    id: 'v019', part: 5, passageId: null, cat: 'colloc',
+    q: '"Attendance at the seminar is mandatory for all staff." 言い換えると？',
+    choices: [
+      'All staff are required to attend',
+      'Staff may attend if they wish',
+      'The seminar is open to the public',
+      'Attendance will be rewarded'
+    ],
+    a: 0, exp: 'mandatory = required = compulsory（必須）。反意語は optional / voluntary（任意）。'
+  },
+  {
+    id: 'v020', part: 5, passageId: null, cat: 'colloc',
+    q: '"Seats will be assigned in the order that requests are received." 言い換えると？',
+    choices: [
+      'Seating is first-come, first-served',
+      'Seats are assigned randomly',
+      'Requests must be made in person',
+      'Seats are reserved for members only'
+    ],
+    a: 0, exp: 'in the order received = first-come, first-served（先着順）。両方向で言い換えられるように。'
+  },
+  {
+    id: 'v021', part: 5, passageId: null, cat: 'colloc',
+    q: '"Refreshments will be complimentary for all attendees." 言い換えると？',
+    choices: [
+      'Attendees can have refreshments for free',
+      'Refreshments are sold at a discount',
+      'Attendees should bring their own refreshments',
+      'Refreshments are for staff only'
+    ],
+    a: 0, exp: 'complimentary = free of charge = at no cost。無料3点セットの3つ目。'
   },
 
 
