@@ -38,12 +38,47 @@ function loadData() {
     App.srsData = {};
     App.history = [];
   }
+  loadGeneratedQuestions();
 }
 
 function saveData() {
   localStorage.setItem('toeic_srs', JSON.stringify(App.srsData));
   if (App.history.length > 500) App.history = App.history.slice(-500);
   localStorage.setItem('toeic_history', JSON.stringify(App.history));
+}
+
+/**
+ * AI が生成した問題を localStorage から復元して QUESTION_BANK に合流させる
+ * （QUESTION_BANK に push するだけではリロードで消えてしまうため）
+ */
+function loadGeneratedQuestions() {
+  let saved = [];
+  try {
+    saved = JSON.parse(localStorage.getItem('toeic_generated_questions') || '[]');
+  } catch (_) {
+    saved = [];
+  }
+  if (!Array.isArray(saved)) return;
+
+  const existingIds = new Set(QUESTION_BANK.map(q => q.id));
+  saved.forEach(q => {
+    if (q && q.id && !existingIds.has(q.id)) {
+      QUESTION_BANK.push(q);
+      existingIds.add(q.id);
+    }
+  });
+}
+
+function saveGeneratedQuestions(newQuestions) {
+  let saved = [];
+  try {
+    saved = JSON.parse(localStorage.getItem('toeic_generated_questions') || '[]');
+  } catch (_) {
+    saved = [];
+  }
+  if (!Array.isArray(saved)) saved = [];
+  const merged = [...saved, ...newQuestions].slice(-200);
+  localStorage.setItem('toeic_generated_questions', JSON.stringify(merged));
 }
 
 function shuffle(arr) {
@@ -345,18 +380,20 @@ function processAnswer(selectedIdx, isCorrect) {
   const updated = SRS.updateRecord(existing, isCorrect);
   App.srsData[q.id] = updated;
 
-  App.history.push({
+  const historyEntry = {
     questionId: q.id,
     correct: isCorrect,
     timestamp: new Date().toISOString(),
     category: q.cat,
     durationSec: durationSec
-  });
+  };
+  App.history.push(historyEntry);
 
   session.results.push({ questionId: q.id, correct: isCorrect, category: q.cat });
 
   saveData();
   Auth.syncUp(q.id, updated);
+  Auth.syncHistoryUp(historyEntry);
 }
 
 function renderAnswerFeedback(selectedIdx, isCorrect, timeExpired) {
@@ -532,9 +569,14 @@ async function runAiQuestionGen(cat) {
   openModal('✨ AI問題生成中...', 'Gemini が TOEIC 問題を作成しています。少々おまちください...');
   try {
     const newQs = await Gemini.generateQuestions(App.selectedPart == 'mix' ? 5 : App.selectedPart, cat, 3);
+    if (newQs.length === 0) {
+      openModal('⚠️ 生成失敗', '<p>有効な形式の問題が返ってきませんでした。もう一度お試しください。</p>');
+      return;
+    }
     newQs.forEach(q => QUESTION_BANK.push(q));
+    saveGeneratedQuestions(newQs);
     renderHome();
-    openModal('🎉 生成完了！', `<p>${newQs.length} 問の問題が新しく問題バンクに追加されました！</p>`);
+    openModal('🎉 生成完了！', `<p>${newQs.length} 問を問題バンクに追加しました。次回以降も出題されます。</p>`);
   } catch (err) {
     openModal('⚠️ 生成失敗', `<p style="color:#ef4444;">${err.message}</p>`);
   }

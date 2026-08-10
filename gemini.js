@@ -64,7 +64,6 @@ TOEIC Part ${part} の演習問題を ${count} 問作成してください。
 
 [
   {
-    "id": "gen_${Date.now()}_1",
     "part": ${part},
     "passageId": null,
     "cat": "${cat}",
@@ -77,7 +76,26 @@ TOEIC Part ${part} の演習問題を ${count} 問作成してください。
 `;
     const resText = await this.callGemini(prompt);
     const cleanJson = resText.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(cleanJson);
+    const parsed = JSON.parse(cleanJson);
+    if (!Array.isArray(parsed)) throw new Error('AIの応答が問題の配列ではありませんでした。');
+
+    // ID は AI に任せず必ずクライアント側で採番する。
+    // （プロンプト内に埋めた ID をそのまま返されると全問同じ ID になり、SRS記録が混ざる）
+    return parsed
+      .filter(q =>
+        q && typeof q.q === 'string' &&
+        Array.isArray(q.choices) && q.choices.length === 4 &&
+        Number.isInteger(q.a) && q.a >= 0 && q.a <= 3 &&
+        typeof q.exp === 'string'
+      )
+      .map((q, i) => ({
+        ...q,
+        id: `gen_${Date.now()}_${i}_${Math.random().toString(36).slice(2, 8)}`,
+        part: Number(q.part) || part,
+        passageId: null,
+        cat: q.cat || cat,
+        generated: true
+      }));
   },
 
   /**

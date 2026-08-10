@@ -137,6 +137,54 @@ const Auth = {
     }
   },
 
+  /**
+   * 解答履歴を1件クラウドへ送る
+   * （グラフ・連続日数・学習時間・予想スコアは全て履歴から計算されるため、
+   *   これを送らないと SRS だけ同期されて分析結果が端末ごとにバラバラになる）
+   */
+  async syncHistoryUp(entry) {
+    if (!this.client || !this.user) return;
+    try {
+      await this.client.from('history').insert({
+        user_id: this.user.id,
+        question_id: entry.questionId,
+        category: entry.category,
+        correct: entry.correct,
+        created_at: entry.timestamp
+      });
+    } catch (e) {
+      console.error('Supabase history insert error:', e);
+    }
+  },
+
+  /**
+   * ローカルにしかない SRS レコードをまとめてクラウドへ上げる
+   * （未ログイン・オフラインで解いた分は syncUp が素通りするため、
+   *   ログイン時にここで拾わないと永久にクラウドへ届かない）
+   */
+  async pushLocalRecords(cloudIds) {
+    if (!this.client || !this.user) return;
+    const rows = Object.entries(App.srsData)
+      .filter(([qid]) => !cloudIds.has(qid))
+      .map(([qid, r]) => ({
+        user_id: this.user.id,
+        question_id: qid,
+        status: r.status,
+        interval: r.interval,
+        correct_streak: r.correctStreak,
+        next_review: r.nextReview,
+        last_reviewed: r.lastReviewed,
+        attempts: r.attempts,
+        correct_count: r.correctCount
+      }));
+    if (rows.length === 0) return;
+    try {
+      await this.client.from('srs_records').upsert(rows, { onConflict: 'user_id,question_id' });
+    } catch (e) {
+      console.error('Supabase bulk push error:', e);
+    }
+  },
+
   async syncDown() {
     if (!this.client || !this.user) return;
     try {
@@ -146,8 +194,18 @@ const Auth = {
         .eq('user_id', this.user.id);
 
       if (error) throw error;
+
+      const cloudIds = new Set();
       if (data && data.length > 0) {
         data.forEach(item => {
+          cloudIds.add(item.question_id);
+          const local = App.srsData[item.question_id];
+          const cloudSeen = new Date(item.last_reviewed || 0).getTime();
+          const localSeen = new Date(local?.lastReviewed || 0).getTime();
+          // 新しく解いた方を採用する（クラウドで無条件上書きすると
+          // 別端末で進めた分が巻き戻る）
+          if (local && localSeen > cloudSeen) return;
+
           App.srsData[item.question_id] = {
             status: item.status,
             interval: item.interval,
@@ -158,11 +216,50 @@ const Auth = {
             correctCount: item.correct_count
           };
         });
-        saveData();
-        renderHome();
       }
+
+      await this.syncHistoryDown();
+      await this.pushLocalRecords(cloudIds);
+
+      saveData();
+      renderHome();
     } catch (e) {
       console.error('Supabase syncDown error:', e);
+    }
+  },
+
+  async syncHistoryDown() {
+    if (!this.client || !this.user) return;
+    try {
+      const { data, error } = await this.client
+        .from('history')
+        .select('*')
+        .eq('user_id', this.user.id)
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+      if (error) throw error;
+      if (!data) return;
+
+      const key = h => `${h.questionId}|${h.timestamp}`;
+      const merged = new Map(App.history.map(h => [key(h), h]));
+      data.forEach(item => {
+        const entry = {
+          questionId: item.question_id,
+          correct: item.correct,
+          timestamp: item.created_at,
+          category: item.category,
+          durationSec: 15
+        };
+        const k = key(entry);
+        if (!merged.has(k)) merged.set(k, entry);
+      });
+
+      App.history = [...merged.values()]
+        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+        .slice(-500);
+    } catch (e) {
+      console.error('Supabase history fetch error:', e);
     }
   }
 };

@@ -4,6 +4,21 @@
  */
 const Analytics = {
   /**
+   * ローカルタイムゾーン基準の YYYY-MM-DD を返す
+   *
+   * toISOString() は UTC に変換されるため、JST(+9) では
+   * 朝9時より前の学習が「前日」に集計されてしまう。
+   * 日付の集計は必ずこのヘルパーを通すこと（srs.js のローカル日付基準と揃える）。
+   */
+  dateKey(dateLike) {
+    const d = dateLike ? new Date(dateLike) : new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  },
+
+  /**
    * 学習時間の集計 (今日の時間・累計時間)
    */
   getStudyTimeStats(history) {
@@ -11,7 +26,7 @@ const Analytics = {
       return { todaySec: 0, totalSec: 0, todayFormatted: '0分', totalFormatted: '0分' };
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = this.dateKey();
     let todaySec = 0;
     let totalSec = 0;
 
@@ -19,7 +34,7 @@ const Analytics = {
       const duration = h.durationSec || 15;
       totalSec += duration;
 
-      const dateStr = new Date(h.timestamp).toISOString().split('T')[0];
+      const dateStr = this.dateKey(h.timestamp);
       if (dateStr === todayStr) {
         todaySec += duration;
       }
@@ -75,7 +90,7 @@ const Analytics = {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const label = `${d.getMonth() + 1}/${d.getDate()}`;
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = this.dateKey(d);
       days.push({ label, dateStr });
     }
     return days;
@@ -85,16 +100,16 @@ const Analytics = {
     if (!history || history.length === 0) return 0;
     
     const dates = new Set(
-      history.map(h => new Date(h.timestamp).toISOString().split('T')[0])
+      history.map(h => this.dateKey(h.timestamp))
     );
 
     let streak = 0;
     const today = new Date();
-    
+
     for (let i = 0; i < 365; i++) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = this.dateKey(d);
       if (dates.has(dateStr)) {
         streak++;
       } else if (i > 0) {
@@ -112,7 +127,7 @@ const Analytics = {
     });
 
     history.forEach(h => {
-      const dateStr = new Date(h.timestamp).toISOString().split('T')[0];
+      const dateStr = this.dateKey(h.timestamp);
       if (dayMap[dateStr]) {
         dayMap[dateStr].total++;
         dayMap[dateStr].durationSec += (h.durationSec || 15);
