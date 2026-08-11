@@ -61,6 +61,34 @@ function getTimerSeconds(q) {
   return q._firstOfPassage ? base + PASSAGE_READ_BONUS : base;
 }
 
+/**
+ * 履歴1件を一意に識別するキー
+ * タイムスタンプは端末が "…Z"、Supabase が "…+00:00" を返すので、
+ * 文字列のままでは同じ解答を別物と誤認する。エポックミリ秒に正規化して比較する。
+ */
+function historyKey(h) {
+  const t = new Date(h.timestamp).getTime();
+  return `${h.questionId}|${Number.isFinite(t) ? t : h.timestamp}`;
+}
+
+/**
+ * 履歴の重複を取り除く
+ * 同一解答が複数あるときは durationSec が実測値（クラウド既定の15秒でない方）を優先する。
+ */
+function dedupeHistory(list) {
+  const map = new Map();
+  (list || []).forEach(h => {
+    if (!h || !h.questionId || !h.timestamp) return;
+    const k = historyKey(h);
+    const prev = map.get(k);
+    if (!prev) { map.set(k, h); return; }
+    const prevIsFallback = (prev.durationSec || 15) === 15;
+    const curIsFallback = (h.durationSec || 15) === 15;
+    if (prevIsFallback && !curIsFallback) map.set(k, h);
+  });
+  return [...map.values()].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+}
+
 function loadData() {
   try {
     App.srsData = JSON.parse(localStorage.getItem('toeic_srs') || '{}');
@@ -69,6 +97,15 @@ function loadData() {
     App.srsData = {};
     App.history = [];
   }
+
+  // 過去に二重登録された履歴をここで一度きれいにする
+  const before = App.history.length;
+  App.history = dedupeHistory(App.history);
+  if (App.history.length !== before) {
+    console.info(`履歴の重複を除去しました: ${before} → ${App.history.length} 件`);
+    localStorage.setItem('toeic_history', JSON.stringify(App.history));
+  }
+
   loadGeneratedQuestions();
 }
 

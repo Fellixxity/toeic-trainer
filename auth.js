@@ -144,14 +144,22 @@ const Auth = {
    */
   async syncHistoryUp(entry) {
     if (!this.client || !this.user) return;
+    const base = {
+      user_id: this.user.id,
+      question_id: entry.questionId,
+      category: entry.category,
+      correct: entry.correct,
+      created_at: entry.timestamp
+    };
     try {
-      await this.client.from('history').insert({
-        user_id: this.user.id,
-        question_id: entry.questionId,
-        category: entry.category,
-        correct: entry.correct,
-        created_at: entry.timestamp
-      });
+      // duration_sec 列は後から追加した任意項目。まだ列が無いプロジェクトでも
+      // 履歴同期そのものが止まらないよう、失敗したら列なしで入れ直す。
+      const { error } = await this.client
+        .from('history')
+        .insert({ ...base, duration_sec: entry.durationSec });
+      if (error) {
+        await this.client.from('history').insert(base);
+      }
     } catch (e) {
       console.error('Supabase history insert error:', e);
     }
@@ -241,17 +249,19 @@ const Auth = {
       if (error) throw error;
       if (!data) return;
 
-      const key = h => `${h.questionId}|${h.timestamp}`;
-      const merged = new Map(App.history.map(h => [key(h), h]));
+      const merged = new Map(App.history.map(h => [historyKey(h), h]));
       data.forEach(item => {
         const entry = {
           questionId: item.question_id,
           correct: item.correct,
-          timestamp: item.created_at,
+          // 端末側と同じ形式に正規化してから保持する。
+          // DBは "…+00:00"、端末は "…Z" を返すため、生の文字列のままだと
+          // 同じ解答を別物とみなして二重登録してしまう。
+          timestamp: new Date(item.created_at).toISOString(),
           category: item.category,
-          durationSec: 15
+          durationSec: item.duration_sec || 15
         };
-        const k = key(entry);
+        const k = historyKey(entry);
         if (!merged.has(k)) merged.set(k, entry);
       });
 

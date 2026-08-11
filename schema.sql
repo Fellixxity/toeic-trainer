@@ -25,8 +25,17 @@ CREATE TABLE IF NOT EXISTS history (
   question_id  TEXT NOT NULL,
   category     TEXT NOT NULL,
   correct      BOOLEAN NOT NULL,
+  duration_sec INTEGER,
   created_at   TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- 既存プロジェクト向けの追加（未実行でもアプリは動く。実行すると
+-- 別端末で解いた分の学習時間が実測値で集計されるようになる）
+ALTER TABLE history ADD COLUMN IF NOT EXISTS duration_sec INTEGER;
+
+-- 同じ解答が二重に入らないようにする保険
+CREATE UNIQUE INDEX IF NOT EXISTS history_unique_answer
+  ON history(user_id, question_id, created_at);
 
 -- updated_at 自動更新トリガー
 CREATE OR REPLACE FUNCTION update_updated_at()
