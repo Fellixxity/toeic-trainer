@@ -193,6 +193,26 @@ const Auth = {
     }
   },
 
+  /**
+   * 指定した問題IDのSRSレコードをクラウドから削除する
+   * （消してもローカルだけだと次回同期で復活してしまうため）
+   */
+  async deleteSrsRecords(questionIds) {
+    if (!this.client || !this.user || questionIds.length === 0) return 0;
+    try {
+      const { error } = await this.client
+        .from('srs_records')
+        .delete()
+        .eq('user_id', this.user.id)
+        .in('question_id', questionIds);
+      if (error) throw error;
+      return questionIds.length;
+    } catch (e) {
+      console.error('Supabase srs delete error:', e);
+      return 0;
+    }
+  },
+
   async syncDown() {
     if (!this.client || !this.user) return;
     try {

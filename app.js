@@ -368,7 +368,9 @@ function renderHome() {
   setText('progress-text', `${stats.graduated} / ${stats.totalInPart} 問 卒業済み`);
 
   // 予想スコア計算 & 表示
-  const pred = Analytics.calculatePredictedScore(App.history, App.srsData, QUESTION_BANK.length);
+  const pred = Analytics.calculatePredictedScore(
+    App.history, App.srsData, QUESTION_BANK.length, new Set(QUESTION_BANK.map(q => q.id))
+  );
   setText('predicted-score-val', pred.score);
   setText('predicted-rank', pred.rank);
 
@@ -381,6 +383,16 @@ function renderHome() {
 
   renderMastery();
   renderForecast();
+  renderUntouchedNudge();
+
+  // 掃除ボタンは不要なレコードがあるときだけ出す
+  const cleanupBtn = document.getElementById('cleanup-btn');
+  if (cleanupBtn) {
+    const n = findOrphanSrs().length;
+    cleanupBtn.style.display = n > 0 ? '' : 'none';
+    const lbl = document.getElementById('cleanup-btn-label');
+    if (lbl) lbl.textContent = `不要な復習データ ${n} 件を整理`;
+  }
 
   // 苦手だけモードのラベル（対象がなければ無効化）
   const weakBtn = document.getElementById('weak-btn');
@@ -456,6 +468,51 @@ function buildExportPayload() {
   };
 }
 
+/**
+ * 存在しない問題を指すSRSレコード（孤児）を探す。
+ * かつてAI生成問題が保存されない不具合があった頃の残骸。
+ * 別端末で生成した問題を巻き添えにしないよう、自動では消さず明示操作にしている。
+ */
+function findOrphanSrs() {
+  const valid = new Set(QUESTION_BANK.map(q => q.id));
+  return Object.keys(App.srsData).filter(qid => !valid.has(qid));
+}
+
+function openOrphanCleanupModal() {
+  const orphans = findOrphanSrs();
+  if (orphans.length === 0) {
+    openModal('🧹 復習データの掃除', '<p>不要なレコードはありません。</p>');
+    return;
+  }
+  openModal('🧹 復習データの掃除', `
+    <p>いまアプリに無い問題を指す復習レコードが <strong>${orphans.length} 件</strong> あります。</p>
+    <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">
+      以前AI生成問題が保存されなかった頃の残骸です。問題本体が存在しないため出題されることはなく、
+      統計にだけ影響します。削除しても学習中の問題の進捗は失われません。
+    </p>
+    <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">
+      別の端末でAI生成した問題がある場合、その進捗も消える点にご注意ください。
+    </p>
+    <button onclick="runOrphanCleanup()" style="width:100%; padding:12px; margin-top:14px; background:var(--purple,#a855f7); color:#fff; border:none; border-radius:10px; font-weight:700; cursor:pointer;">${orphans.length} 件を削除する</button>
+  `);
+}
+
+async function runOrphanCleanup() {
+  const orphans = findOrphanSrs();
+  openModal('🧹 削除中…', '<p>復習データを整理しています。</p>');
+  orphans.forEach(qid => { delete App.srsData[qid]; });
+  saveData();
+  const removedCloud = await Auth.deleteSrsRecords(orphans);
+  renderHome();
+  openModal('🧹 完了', `
+    <p>${orphans.length} 件を削除しました。</p>
+    <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">
+      ${removedCloud > 0 ? 'クラウド側からも削除済みです。' : 'ログインしていないため、この端末のみ削除しました。'}
+      残りの復習レコードは ${Object.keys(App.srsData).length} 件です。
+    </p>
+  `);
+}
+
 async function exportStudyData() {
   const json = JSON.stringify(buildExportPayload());
   const sizeKb = Math.round(json.length / 1024);
@@ -477,6 +534,42 @@ async function exportStudyData() {
     </p>
     <a href="${url}" download="toeic-study-${stamp}.json" style="display:inline-block; margin-top:12px; padding:10px 16px; background:var(--blue,#3b82f6); color:#fff; border-radius:8px; text-decoration:none; font-size:14px;">ファイルとして保存</a>
   `);
+}
+
+/**
+ * ほとんど手をつけていない Part があれば、そこへ誘導する。
+ * 苦手より先に「まだ始めていない領域」を潰す方がスコアは動く。
+ */
+function renderUntouchedNudge() {
+  const el = document.getElementById('nudge-card');
+  if (!el) return;
+
+  const attempted = {};
+  QUESTION_BANK.forEach(q => {
+    attempted[q.part] = attempted[q.part] || { total: 0, done: 0 };
+    attempted[q.part].total++;
+    const r = App.srsData[q.id];
+    if (r && r.status && r.status !== 'new') attempted[q.part].done++;
+  });
+
+  const PART_LABEL = { 2: 'Part 2（リスニング応答）', 5: 'Part 5', 6: 'Part 6', 7: 'Part 7' };
+  const target = Object.entries(attempted)
+    .filter(([, v]) => v.total >= 5 && v.done / v.total < 0.2)
+    .sort((a, b) => (a[1].done / a[1].total) - (b[1].done / b[1].total))[0];
+
+  if (!target || App.selectedPart == target[0]) { el.style.display = 'none'; return; }
+
+  const [part, v] = target;
+  el.style.display = '';
+  el.innerHTML = `
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <span style="font-size:20px;">💡</span>
+      <div style="flex:1; min-width:180px;">
+        <div style="font-size:14px; font-weight:600;">${PART_LABEL[part] || 'Part ' + part} がほぼ未着手です</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">${v.total}問中 ${v.done}問しか解いていません。伸びしろが一番大きい場所です。</div>
+      </div>
+      <button onclick="selectPartTab(${isNaN(Number(part)) ? `'${part}'` : part}); startSession();" style="background:var(--blue,#3b82f6); color:#fff; border:none; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer; white-space:nowrap;">ここから始める ▶</button>
+    </div>`;
 }
 
 function renderMastery() {

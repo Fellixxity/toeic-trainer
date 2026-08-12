@@ -61,7 +61,7 @@ const Analytics = {
   /**
    * TOEIC Reading 予想スコア (100点 〜 495点) を算出
    */
-  calculatePredictedScore(history, srsData, totalQuestionsCount) {
+  calculatePredictedScore(history, srsData, totalQuestionsCount, validIds) {
     if (!history || history.length < 5) {
       return { score: 120, rank: '測定中...', detail: '過去の回答データが5件未満です' };
     }
@@ -69,7 +69,11 @@ const Analytics = {
     const recent = history.slice(-30);
     const accuracyRatio = recent.filter(h => h.correct).length / recent.length;
 
-    const graduatedCount = Object.values(srsData).filter(r => r.status === 'graduated').length;
+    // 消えた問題を指す古いSRSレコードを分子に入れないよう、
+    // 現在の問題バンクに存在するものだけを数える。
+    const graduatedCount = Object.entries(srsData)
+      .filter(([qid, r]) => r.status === 'graduated' && (!validIds || validIds.has(qid)))
+      .length;
     const graduatedRatio = Math.min(1, graduatedCount / (totalQuestionsCount || 44));
 
     let score = 100 + Math.round(accuracyRatio * 270) + Math.round(graduatedRatio * 125);

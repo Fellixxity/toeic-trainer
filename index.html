@@ -58,6 +58,9 @@
         <button class="part-tab" data-part="mix" onclick="selectPartTab('mix')">Mix 全波</button>
       </div>
 
+      <!-- Untouched-part nudge -->
+      <div class="progress-card" id="nudge-card" style="display:none; margin-bottom:12px; border-color:rgba(59,130,246,0.35);"></div>
+
       <!-- Stats Grid -->
       <div class="stats-grid">
         <div class="stat-card" id="stat-due">
@@ -141,6 +144,9 @@
       <!-- Export for external analysis -->
       <button class="btn-ai-action" onclick="exportStudyData()" style="width:100%; margin-top:8px;">
         <span>📤</span> 学習データを書き出す
+      </button>
+      <button class="btn-ai-action" id="cleanup-btn" onclick="openOrphanCleanupModal()" style="width:100%; margin-top:8px; display:none;">
+        <span>🧹</span> <span id="cleanup-btn-label">不要な復習データを整理</span>
       </button>
 
       <!-- Gemini Key Direct Setting Button -->

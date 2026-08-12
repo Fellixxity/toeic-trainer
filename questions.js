@@ -911,6 +911,96 @@ const QUESTION_BANK = [
 
 
   // ================================================================
+  // 動詞の語法（動名詞 vs to不定詞）
+  //   前置詞+動名詞は機械的に解けるが、動詞ごとの語法は暗記が要る。
+  //   実測でこの領域の正答率が最も低かったため厚めに用意している。
+  // ================================================================
+  {
+    id: 'e012', part: 5, passageId: null, cat: 'gerund',
+    q: 'The committee considered ------- the deadline, but decided against it in the end.',
+    choices: ['to extend', 'extending', 'extend', 'extended'],
+    a: 1, exp: 'consider は動名詞のみ。動名詞グループの覚え方「MEGAFEPS」= Mind / Enjoy / Give up / Avoid / Finish / Escape / Postpone / Suggest（＋consider, deny, admit, practice）。'
+  },
+  {
+    id: 'e013', part: 5, passageId: null, cat: 'gerund',
+    q: 'Ms. Reyes managed ------- the report before the client meeting began.',
+    choices: ['finishing', 'to finish', 'finish', 'finished'],
+    a: 1, exp: 'manage は to不定詞のみ（manage to do =「どうにか〜する」）。不定詞グループ: manage / afford / decide / agree / offer / refuse / promise / hope / plan / expect。'
+  },
+  {
+    id: 'e014', part: 5, passageId: null, cat: 'gerund',
+    q: 'Would you mind ------- the air conditioning down a little?',
+    choices: ['to turn', 'turning', 'turn', 'turned'],
+    a: 1, exp: 'mind は動名詞のみ。Part 2 の「Would you mind doing?」→ 承諾は Not at all とセットで押さえる。'
+  },
+  {
+    id: 'e015', part: 5, passageId: null, cat: 'gerund',
+    q: 'The supplier refused ------- the defective units without the original receipt.',
+    choices: ['replacing', 'to replace', 'replace', 'replaced'],
+    a: 1, exp: 'refuse は to不定詞のみ。同じ「断る」でも avoid（避ける）は動名詞なので混同注意。'
+  },
+  {
+    id: 'e016', part: 5, passageId: null, cat: 'gerund',
+    q: 'Please remember ------- the alarm when you are the last to leave.',
+    choices: ['setting', 'to set', 'set', 'having set'],
+    a: 1, exp: 'remember to do =「これから〜するのを忘れずに」、remember doing =「〜したのを覚えている」。指示・依頼の文脈なら to不定詞。'
+  },
+  {
+    id: 'e017', part: 5, passageId: null, cat: 'gerund',
+    q: 'I still remember ------- this building for the first time twenty years ago.',
+    choices: ['to visit', 'visiting', 'visit', 'to have visited'],
+    a: 1, exp: 'こちらは過去の記憶なので remember doing。e016 と対で、意味で使い分ける型として覚える。'
+  },
+  {
+    id: 'e018', part: 5, passageId: null, cat: 'gerund',
+    q: 'The technician stopped ------- the manual because the instructions were unclear.',
+    choices: ['reading', 'to read', 'read', 'to have read'],
+    a: 1, exp: 'stop to do =「〜するために立ち止まる」（目的）、stop doing =「〜するのをやめる」。「説明が不明瞭だったので読むために手を止めた」＝目的なので to read。'
+  },
+  {
+    id: 'e019', part: 5, passageId: null, cat: 'gerund',
+    q: 'We regret ------- you that your application was not successful.',
+    choices: ['informing', 'to inform', 'inform', 'having informed'],
+    a: 1, exp: 'regret to do =「残念ながら今から〜する」、regret doing =「〜したことを後悔する」。通知文の定型は regret to inform。'
+  },
+  {
+    id: 'e020', part: 5, passageId: null, cat: 'gerund',
+    q: 'Our team is looking forward to ------- with your firm on the next project.',
+    choices: ['work', 'working', 'be working', 'have worked'],
+    a: 1, exp: 'look forward to の to は前置詞なので動名詞。to があると不定詞と誤りやすい最頻出の罠。'
+  },
+  {
+    id: 'e021', part: 5, passageId: null, cat: 'gerund',
+    q: 'The staff are now used to ------- the new inventory system every morning.',
+    choices: ['operate', 'operating', 'operated', 'operation'],
+    a: 1, exp: 'be used to doing =「〜に慣れている」（to は前置詞）。used to do =「以前は〜していた」と区別する。'
+  },
+  {
+    id: 'e022', part: 5, passageId: null, cat: 'gerund',
+    q: 'Several residents objected to ------- the parking fee without prior notice.',
+    choices: ['raise', 'raising', 'be raised', 'have raised'],
+    a: 1, exp: 'object to / be committed to / be dedicated to / be opposed to は全て to が前置詞なので動名詞が続く。'
+  },
+  {
+    id: 'e023', part: 5, passageId: null, cat: 'gerund',
+    q: 'The firm cannot afford ------- another delay in the construction schedule.',
+    choices: ['risking', 'to risk', 'risk', 'risked'],
+    a: 1, exp: 'afford は to不定詞のみ（afford to do =「〜する余裕がある」）。can/cannot afford to の形で頻出。'
+  },
+  {
+    id: 'e024', part: 5, passageId: null, cat: 'gerund',
+    q: 'The manufacturer denied ------- any safety regulations during the inspection.',
+    choices: ['to violate', 'violating', 'violate', 'to have violate'],
+    a: 1, exp: 'deny は動名詞のみ（deny doing =「〜したことを否定する」）。refuse to do（依頼を断る）と意味も語法も別物。'
+  },
+  {
+    id: 'e025', part: 5, passageId: null, cat: 'gerund',
+    q: 'The department head agreed ------- the proposal at the next board meeting.',
+    choices: ['presenting', 'to present', 'present', 'presented'],
+    a: 1, exp: 'agree は to不定詞のみ。「同意する」系でも admit は動名詞（admit doing）なので混同しないこと。'
+  },
+
+  // ================================================================
   // PART 2 応答問題（リスニング）
   //   q       : 読み上げられる問いかけ（画面には解答後まで出さない）
   //   choices : 応答3つ（Part 2 は本番も3択）
