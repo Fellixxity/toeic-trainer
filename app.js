@@ -417,6 +417,68 @@ function renderHome() {
   }
 }
 
+/**
+ * 学習データを外部で分析できる形に書き出す。
+ * 問題文そのものは含めず、ID・カテゴリ・正誤・所要時間だけを出す。
+ */
+function buildExportPayload() {
+  const byId = {};
+  QUESTION_BANK.forEach(q => { byId[q.id] = q; });
+
+  return {
+    exportedAt: new Date().toISOString(),
+    app: 'toeic-trainer',
+    counts: {
+      questionBank: QUESTION_BANK.length,
+      history: App.history.length,
+      srs: Object.keys(App.srsData).length
+    },
+    history: App.history.map(h => ({
+      qid: h.questionId,
+      cat: h.category,
+      part: byId[h.questionId]?.part ?? null,
+      correct: h.correct,
+      sec: h.durationSec ?? null,
+      at: h.timestamp
+    })),
+    srs: Object.entries(App.srsData).map(([qid, r]) => ({
+      qid,
+      cat: byId[qid]?.cat ?? null,
+      part: byId[qid]?.part ?? null,
+      status: r.status,
+      interval: r.interval,
+      streak: r.correctStreak,
+      attempts: r.attempts,
+      correct: r.correctCount,
+      nextReview: r.nextReview,
+      lastReviewed: r.lastReviewed
+    }))
+  };
+}
+
+async function exportStudyData() {
+  const json = JSON.stringify(buildExportPayload());
+  const sizeKb = Math.round(json.length / 1024);
+  let copied = false;
+  try {
+    await navigator.clipboard.writeText(json);
+    copied = true;
+  } catch (_) { /* 権限が無い場合はダウンロードで渡す */ }
+
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const stamp = Analytics.dateKey();
+
+  openModal('📤 学習データの書き出し', `
+    <p>${copied ? 'クリップボードにコピーしました。そのまま貼り付けて分析を依頼できます。' : 'クリップボードが使えなかったので、下のリンクから保存してください。'}</p>
+    <p style="font-size:12px; color:var(--text-muted); margin-top:8px;">
+      履歴 ${App.history.length} 件 / SRS ${Object.keys(App.srsData).length} 件 / 約 ${sizeKb} KB<br>
+      問題文は含まれません（ID・カテゴリ・正誤・所要時間のみ）。
+    </p>
+    <a href="${url}" download="toeic-study-${stamp}.json" style="display:inline-block; margin-top:12px; padding:10px 16px; background:var(--blue,#3b82f6); color:#fff; border-radius:8px; text-decoration:none; font-size:14px;">ファイルとして保存</a>
+  `);
+}
+
 function renderMastery() {
   const el = document.getElementById('mastery-list');
   if (!el) return;
