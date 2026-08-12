@@ -449,6 +449,10 @@ body::before {
 .cat-colloc { background: rgba(236,72,153,0.2); color: #f472b6; }
 .cat-reading { background: rgba(245,158,11,0.2); color: #fbbf24; }
 .cat-listening { background: rgba(20,184,166,0.2); color: #2dd4bf; }
+.cat-vocab { background: rgba(244,114,182,0.18); color: #f9a8d4; }
+
+/* 語彙の解説は term / 例文 / 注意点を改行で並べるため、改行を活かす */
+#explanation { white-space: pre-line; }
 
 #audio-bar.hidden { display: none !important; }
 #replay-btn:disabled { opacity: 0.45; cursor: default; }

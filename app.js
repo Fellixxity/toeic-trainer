@@ -8,6 +8,7 @@ const CAT_NAMES = {
   colloc:    '語彙コロケーション',
   reading:   '長文読解',
   listening: 'リスニング応答',
+  vocab:     '語彙（塊で暗記）',
 };
 
 // Part 2 の問いかけの型（解答後のヒント表示に使う）
@@ -25,7 +26,7 @@ const PTYPE_NAMES = {
  * 本番の目安は Part 5 が20〜30秒、Part 7 は1問1分＋本文を読む時間。
  * 全Part一律45秒だと長文が明らかに足りないため Part 別に持つ。
  */
-const TIMER_BY_PART = { 2: 20, 5: 45, 6: 60, 7: 90 };
+const TIMER_BY_PART = { 2: 20, 5: 45, 6: 60, 7: 90, vocab: 12 };
 const TIMER_DEFAULT = 45;
 // パッセージの1問目には本文を読む時間を加算する
 const PASSAGE_READ_BONUS = 60;
@@ -106,6 +107,7 @@ function loadData() {
     localStorage.setItem('toeic_history', JSON.stringify(App.history));
   }
 
+  buildVocabQuestions();
   loadGeneratedQuestions();
 }
 
@@ -119,6 +121,48 @@ function saveData() {
  * AI が生成した問題を localStorage から復元して QUESTION_BANK に合流させる
  * （QUESTION_BANK に push するだけではリロードで消えてしまうため）
  */
+/**
+ * 語彙デッキから出題オブジェクトを組み立てて問題バンクに合流させる。
+ *
+ * 単語の意味を単体で覚えても TOEIC では点にならないため、term は塊で持ち、
+ * 英→日（認識）と 日→英（産出）を交互に割り当てる。産出の方が定着が良い。
+ * 誤答は同じデッキから決め打ちで選ぶ（毎回変えると SRS の難度が安定しないため）。
+ */
+function buildVocabQuestions() {
+  if (typeof VOCAB_BANK === 'undefined') return;
+  const n = VOCAB_BANK.length;
+  if (n < 4) return;
+  // loadData() が再度呼ばれても二重に積まないこと
+  if (QUESTION_BANK.some(q => q.part === 'vocab')) return;
+
+  VOCAB_BANK.forEach((w, i) => {
+    // 英→日 と 日→英 を交互に。産出側をやや多めにするため 3 個おきに 2 回 ja→en
+    const jaToEn = (i % 3) !== 0;
+
+    // 誤答は決定的に選ぶ（インデックスをずらして重複しないように）
+    const others = [1, 2, 3].map(k => VOCAB_BANK[(i + k * 7 + 1) % n]);
+    const pool = [w, ...others];
+
+    const choices = jaToEn ? pool.map(x => x.term) : pool.map(x => x.ja);
+    // 万一表示が重複したら出題しない（4択として成立しないため）
+    if (new Set(choices).size !== 4) return;
+
+    QUESTION_BANK.push({
+      id: `${w.id}_${jaToEn ? 'e' : 'j'}`,
+      part: 'vocab',
+      passageId: null,
+      cat: 'vocab',
+      vocabId: w.id,
+      q: jaToEn
+        ? `「${w.ja}」を英語では？`
+        : `${w.term} の意味は？`,
+      choices,
+      a: 0,
+      exp: `${w.term} = ${w.ja}\n例: ${w.ex}${w.note ? '\n' + w.note : ''}`
+    });
+  });
+}
+
 function loadGeneratedQuestions() {
   let saved = [];
   try {
@@ -228,13 +272,21 @@ function getStats() {
   return { dueReviews, newQuestions, accuracy, weakCat, graduated, totalInPart: pool.length };
 }
 
+/**
+ * 1セッションの問題数。語彙は1問十数秒で回せるので多めにする。
+ */
+function sessionSize() {
+  return App.selectedPart === 'vocab' ? 20 : 10;
+}
+
 function buildSession() {
   const { dueReviews, newQuestions } = getStats();
+  const size = sessionSize();
 
-  let pool = shuffle([...dueReviews]).slice(0, 10);
+  let pool = shuffle([...dueReviews]).slice(0, size);
 
-  if (pool.length < 10 && newQuestions.length > 0) {
-    const needed = 10 - pool.length;
+  if (pool.length < size && newQuestions.length > 0) {
+    const needed = size - pool.length;
     pool = [...pool, ...shuffle([...newQuestions]).slice(0, needed)];
   }
 
@@ -349,8 +401,8 @@ function renderHome() {
   // 復習が1セッション（10問）に収まらないときは消化ペースが分かるよう補足する
   const dueNote = document.getElementById('due-note');
   if (dueNote) {
-    dueNote.textContent = stats.dueReviews.length > 10
-      ? `うち10問を出題`
+    dueNote.textContent = stats.dueReviews.length > sessionSize()
+      ? `うち${sessionSize()}問を出題`
       : '';
   }
 
@@ -420,8 +472,9 @@ function renderHome() {
   } else {
     btn.disabled = false;
     noMsg.style.display = 'none';
-    const dueCount = Math.min(stats.dueReviews.length, 10);
-    const newCount = Math.min(10 - dueCount, stats.newQuestions.length);
+    const size = sessionSize();
+    const dueCount = Math.min(stats.dueReviews.length, size);
+    const newCount = Math.min(size - dueCount, stats.newQuestions.length);
     const parts = [];
     if (dueCount > 0) parts.push(`復習 ${dueCount}問`);
     if (newCount > 0) parts.push(`新規 ${newCount}問`);
@@ -552,7 +605,7 @@ function renderUntouchedNudge() {
     if (r && r.status && r.status !== 'new') attempted[q.part].done++;
   });
 
-  const PART_LABEL = { 2: 'Part 2（リスニング応答）', 5: 'Part 5', 6: 'Part 6', 7: 'Part 7' };
+  const PART_LABEL = { 2: 'Part 2（リスニング応答）', 5: 'Part 5', 6: 'Part 6', 7: 'Part 7', vocab: '単語（語彙デッキ）' };
   const target = Object.entries(attempted)
     .filter(([, v]) => v.total >= 5 && v.done / v.total < 0.2)
     .sort((a, b) => (a[1].done / a[1].total) - (b[1].done / b[1].total))[0];
@@ -693,7 +746,9 @@ function renderQuestion() {
 
   const badge = document.getElementById('q-cat');
   if (badge) {
-    badge.textContent = `Part ${q.part} · ${CAT_NAMES[q.cat] || q.cat}`;
+    badge.textContent = q.part === 'vocab'
+      ? (CAT_NAMES[q.cat] || q.cat)
+      : `Part ${q.part} · ${CAT_NAMES[q.cat] || q.cat}`;
     badge.className = `cat-badge cat-${q.cat || 'pos'}`;
   }
 
