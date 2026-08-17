@@ -142,30 +142,51 @@ function buildVocabQuestions() {
   // loadData() が再度呼ばれても二重に積まないこと
   if (QUESTION_BANK.some(q => q.part === 'vocab')) return;
 
+  // 誤答は必ず同じ品詞から取る。品詞が混ざると明らかに形の違う語が並び、
+  // 中身を知らなくても消去法で当たってしまう。
+  const byPos = {};
+  VOCAB_BANK.forEach(w => { (byPos[w.pos || 'noun'] ||= []).push(w); });
+
+  // 抜く語は語句の先頭の内容語。語句をまるごと抜くと文脈が薄くなり
+  // 他の選択肢も入りうるが、1語だけなら残りが手がかりになって答えが定まる。
+  const keyWord = term => {
+    const parts = term.split(' ');
+    return /^be$/i.test(parts[0]) && parts.length > 1 ? parts[1] : parts[0];
+  };
+
+  const blankKeyWord = (sentence, term) => {
+    const word = keyWord(term);
+    const re = new RegExp(`(^|[^A-Za-z])(${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})([^A-Za-z]|$)`, 'i');
+    const m = sentence.match(re);
+    if (!m) return null;
+    const start = m.index + m[1].length;
+    return { cloze: sentence.slice(0, start) + '-------' + sentence.slice(start + m[2].length), word };
+  };
+
   VOCAB_BANK.forEach((w, i) => {
-    // 英→日 と 日→英 を交互に。産出側をやや多めにするため 3 個おきに 2 回 ja→en
-    const jaToEn = (i % 3) !== 0;
+    const made = blankKeyWord(w.ex, w.term);
+    if (!made) return;
 
-    // 誤答は決定的に選ぶ（インデックスをずらして重複しないように）
-    const others = [1, 2, 3].map(k => VOCAB_BANK[(i + k * 7 + 1) % n]);
-    const pool = [w, ...others];
+    // 同じ品詞の語句から誤答を決定的に選ぶ（毎回変えると難度が安定しない）
+    const same = (byPos[w.pos || 'noun'] || []).filter(x => x.id !== w.id);
+    const pool = same.length >= 3 ? same : VOCAB_BANK.filter(x => x.id !== w.id);
+    const others = [1, 2, 3].map(k => pool[(i * 3 + k * 5) % pool.length]);
+    const cloze = made.cloze;
+    const choices = [made.word, ...others.map(x => keyWord(x.term))];
+    if (new Set(choices.map(c => c.toLowerCase())).size !== 4) return;
 
-    const choices = jaToEn ? pool.map(x => x.term) : pool.map(x => x.ja);
-    // 万一表示が重複したら出題しない（4択として成立しないため）
-    if (new Set(choices).size !== 4) return;
+    const explanation = `${w.term} = ${w.ja}\n例: ${w.ex}${w.note ? '\n' + w.note : ''}`;
 
+    // ヒントなし（実力確認）とヒントあり（覚えたて用）の2種類。
+    // 意味を選ばせる形式は正答率90%で負荷が足りなかったため、
+    // どちらも文脈に当てはめる形にしてある。
     QUESTION_BANK.push({
-      id: `${w.id}_${jaToEn ? 'e' : 'j'}`,
-      part: 'vocab',
-      passageId: null,
-      cat: 'vocab',
-      vocabId: w.id,
-      q: jaToEn
-        ? `「${w.ja}」を英語では？`
-        : `${w.term} の意味は？`,
-      choices,
-      a: 0,
-      exp: `${w.term} = ${w.ja}\n例: ${w.ex}${w.note ? '\n' + w.note : ''}`
+      id: `${w.id}_e`, part: 'vocab', passageId: null, cat: 'vocab', vocabId: w.id,
+      q: cloze, choices, a: 0, exp: explanation
+    });
+    QUESTION_BANK.push({
+      id: `${w.id}_j`, part: 'vocab', passageId: null, cat: 'vocab', vocabId: w.id,
+      q: `${cloze}\n（ヒント: ${w.ja}）`, choices, a: 0, exp: explanation
     });
   });
 }
@@ -443,6 +464,7 @@ function renderHome() {
   renderMastery();
   renderForecast();
   renderUntouchedNudge();
+  renderBacklog();
 
   // 掃除ボタンは不要なレコードがあるときだけ出す
   const cleanupBtn = document.getElementById('cleanup-btn');
@@ -600,6 +622,81 @@ async function exportStudyData() {
  * ほとんど手をつけていない Part があれば、そこへ誘導する。
  * 苦手より先に「まだ始めていない領域」を潰す方がスコアは動く。
  */
+/**
+ * 選択中のタブに関係なく、全体でどれだけ復習が滞っているかを出す。
+ *
+ * 「今日の復習」は選択中Partの分しか数えないため、語彙タブだけを回していると
+ * 他Partの期限切れが画面に出ず、放置されていることに気づけなかった。
+ */
+function getBacklog() {
+  const now = today();
+  const overdue = [];
+  const dueToday = [];
+  QUESTION_BANK.forEach(q => {
+    const r = App.srsData[q.id];
+    if (!r || r.status === 'new' || r.status === 'graduated') return;
+    if (!r.nextReview) { dueToday.push(q); return; }
+    const d = new Date(r.nextReview);
+    d.setHours(0, 0, 0, 0);
+    if (d < now) overdue.push(q);
+    else if (d.getTime() === now.getTime()) dueToday.push(q);
+  });
+  return { overdue, dueToday };
+}
+
+function renderBacklog() {
+  const el = document.getElementById('backlog-card');
+  if (!el) return;
+  const { overdue, dueToday } = getBacklog();
+  const total = overdue.length + dueToday.length;
+
+  if (overdue.length === 0) { el.style.display = 'none'; return; }
+
+  // 卒業まであと1回正解すればよいものを数える（消化の動機になるので出す）
+  const nearGraduation = [...overdue, ...dueToday].filter(q => {
+    const r = App.srsData[q.id];
+    return r && r.interval >= 4 && r.correctStreak >= 1;
+  }).length;
+
+  const byPart = {};
+  overdue.forEach(q => { byPart[q.part] = (byPart[q.part] || 0) + 1; });
+  const partLabel = { 2: 'Part 2', 5: 'Part 5', 6: 'Part 6', 7: 'Part 7', vocab: '単語' };
+  const breakdown = Object.entries(byPart)
+    .sort((a, b) => b[1] - a[1])
+    .map(([p, n]) => `${partLabel[p] || p} ${n}`)
+    .join(' ・ ');
+
+  el.style.display = '';
+  el.innerHTML = `
+    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+      <span style="font-size:20px;">⏳</span>
+      <div style="flex:1; min-width:200px;">
+        <div style="font-size:14px; font-weight:600;">期限切れの復習が ${overdue.length} 件たまっています</div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:2px;">
+          ${breakdown}${dueToday.length ? `（本日期限がさらに ${dueToday.length} 件）` : ''}<br>
+          ${nearGraduation > 0 ? `うち ${nearGraduation} 件は次に正解すれば卒業します。` : ''}
+        </div>
+      </div>
+      <button onclick="startBacklogSession()" style="background:var(--purple,#a855f7); color:#fff; border:none; border-radius:8px; padding:10px 16px; font-size:13px; cursor:pointer; white-space:nowrap;">まとめて復習 ▶</button>
+    </div>`;
+}
+
+/**
+ * Part をまたいで、期限切れの古い順に出題する
+ */
+function startBacklogSession() {
+  const { overdue, dueToday } = getBacklog();
+  const pool = [...overdue, ...dueToday];
+  if (pool.length === 0) return;
+
+  const byDue = q => {
+    const r = App.srsData[q.id];
+    return r && r.nextReview ? new Date(r.nextReview).getTime() : 0;
+  };
+  const picked = [...pool].sort((a, b) => byDue(a) - byDue(b)).slice(0, 20);
+  launchSession(picked);
+}
+
 function renderUntouchedNudge() {
   const el = document.getElementById('nudge-card');
   if (!el) return;

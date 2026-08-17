@@ -1001,6 +1001,84 @@ const QUESTION_BANK = [
   },
 
   // ================================================================
+  // 動名詞を取る動詞に特化した追加分
+  //   実測で「迷ったら to不定詞を選ぶ」癖が出ており、-ing 側だけが崩れていた。
+  //   （to不定詞側の e013/e015/e023/e025 は全問正解、-ing 側の e012/e014/e024 は全問不正解）
+  // ================================================================
+  {
+    id: 'e026', part: 5, passageId: null, cat: 'gerund',
+    q: 'The safety officer recommended ------- the emergency exits twice a year.',
+    choices: ['to inspect', 'inspecting', 'inspect', 'inspected'],
+    a: 1, exp: 'recommend は動名詞を取る。recommend to do とは言わない（recommend that 節 + 原形なら可）。'
+  },
+  {
+    id: 'e027', part: 5, passageId: null, cat: 'gerund',
+    q: 'Please avoid ------- the loading dock between eight and ten in the morning.',
+    choices: ['to use', 'using', 'use', 'used'],
+    a: 1, exp: 'avoid は動名詞のみ。「避ける」系は -ing、「決める・約束する」系は to不定詞、と方向で覚える。'
+  },
+  {
+    id: 'e028', part: 5, passageId: null, cat: 'gerund',
+    q: 'The board postponed ------- on the merger until the audit is complete.',
+    choices: ['to vote', 'voting', 'vote', 'voted'],
+    a: 1, exp: 'postpone は動名詞のみ。delay / put off も同じ仲間。'
+  },
+  {
+    id: 'e029', part: 5, passageId: null, cat: 'gerund',
+    q: 'The contractor admitted ------- the wrong measurements to the architect.',
+    choices: ['to send', 'sending', 'send', 'to have send'],
+    a: 1, exp: 'admit は動名詞のみ（admit doing =「〜したと認める」）。deny doing と対で覚える。'
+  },
+  {
+    id: 'e030', part: 5, passageId: null, cat: 'gerund',
+    q: 'Our team finished ------- the quarterly figures ahead of schedule.',
+    choices: ['to compile', 'compiling', 'compile', 'compiled'],
+    a: 1, exp: 'finish は動名詞のみ。完了・中止を表す動詞は -ing を取りやすい。'
+  },
+  {
+    id: 'e031', part: 5, passageId: null, cat: 'gerund',
+    q: 'The renovation will involve ------- the entire ventilation system.',
+    choices: ['to replace', 'replacing', 'replace', 'replacement of'],
+    a: 1, exp: 'involve は動名詞のみ（involve doing =「〜を伴う」）。'
+  },
+  {
+    id: 'e032', part: 5, passageId: null, cat: 'gerund',
+    q: 'Several employees suggested ------- the weekly meeting to Friday afternoon.',
+    choices: ['to move', 'moving', 'move', 'moved'],
+    a: 1, exp: 'suggest は動名詞のみ。suggest to do は誤り。that節なら原形（仮定法現在）。'
+  },
+  {
+    id: 'e033', part: 5, passageId: null, cat: 'gerund',
+    q: 'The committee is committed to ------- the results before the end of the year.',
+    choices: ['publish', 'publishing', 'be published', 'publication'],
+    a: 1, exp: 'be committed to の to は前置詞なので動名詞。be dedicated to / be opposed to も同型。'
+  },
+  {
+    id: 'e034', part: 5, passageId: null, cat: 'gerund',
+    q: 'On the way to the airport, the driver stopped ------- fuel at a service station.',
+    choices: ['getting', 'to get', 'get', 'got'],
+    a: 1, exp: 'stop to do =「〜するために立ち止まる」（目的）。stop doing =「〜するのをやめる」。ここは給油が目的。'
+  },
+  {
+    id: 'e035', part: 5, passageId: null, cat: 'gerund',
+    q: 'The tenants gave up ------- the landlord after three unanswered letters.',
+    choices: ['to contact', 'contacting', 'contact', 'contacted'],
+    a: 1, exp: 'give up は動名詞のみ。句動詞の up は前置詞ではないが、give up doing で固定。'
+  },
+  {
+    id: 'e036', part: 5, passageId: null, cat: 'gerund',
+    q: 'Residents strongly objected to ------- the community center on weekends.',
+    choices: ['close', 'closing', 'be closed', 'closure'],
+    a: 1, exp: 'object to の to は前置詞。「〜に反対する」で後ろは名詞か動名詞。'
+  },
+  {
+    id: 'e037', part: 5, passageId: null, cat: 'gerund',
+    q: 'The new assistant is not yet used to ------- calls from overseas clients.',
+    choices: ['handle', 'handling', 'be handled', 'have handled'],
+    a: 1, exp: 'be used to doing =「〜に慣れている」。used to do =「以前は〜していた」と混同しないこと。'
+  },
+
+  // ================================================================
   // PART 2 応答問題（リスニング）
   //   q       : 読み上げられる問いかけ（画面には解答後まで出さない）
   //   choices : 応答3つ（Part 2 は本番も3択）

@@ -453,6 +453,8 @@ body::before {
 
 /* 語彙の解説は term / 例文 / 注意点を改行で並べるため、改行を活かす */
 #explanation { white-space: pre-line; }
+/* 語彙のヒント行を改行して出すため */
+.q-text { white-space: pre-line; }
 
 #audio-bar.hidden { display: none !important; }
 #replay-btn:disabled { opacity: 0.45; cursor: default; }
