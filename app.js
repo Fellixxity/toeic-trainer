@@ -27,6 +27,13 @@ const PTYPE_NAMES = {
  * 全Part一律45秒だと長文が明らかに足りないため Part 別に持つ。
  */
 const TIMER_BY_PART = { 2: 20, 5: 45, 6: 60, 7: 90, vocab: 12 };
+
+/**
+ * 保持する解答履歴の上限。
+ * 1日100問ペースだと500件では5日分しか残らず、連続学習日数と
+ * 7日間グラフが過去を失う。1件あたり約120バイトなので5000件でも1MB弱。
+ */
+const HISTORY_LIMIT = 5000;
 const TIMER_DEFAULT = 45;
 // パッセージの1問目には本文を読む時間を加算する
 const PASSAGE_READ_BONUS = 60;
@@ -113,7 +120,7 @@ function loadData() {
 
 function saveData() {
   localStorage.setItem('toeic_srs', JSON.stringify(App.srsData));
-  if (App.history.length > 500) App.history = App.history.slice(-500);
+  if (App.history.length > HISTORY_LIMIT) App.history = App.history.slice(-HISTORY_LIMIT);
   localStorage.setItem('toeic_history', JSON.stringify(App.history));
 }
 

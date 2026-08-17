@@ -264,7 +264,7 @@ const Auth = {
         .select('*')
         .eq('user_id', this.user.id)
         .order('created_at', { ascending: false })
-        .limit(500);
+        .limit(HISTORY_LIMIT);
 
       if (error) throw error;
       if (!data) return;
@@ -287,7 +287,7 @@ const Auth = {
 
       App.history = [...merged.values()]
         .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
-        .slice(-500);
+        .slice(-HISTORY_LIMIT);
     } catch (e) {
       console.error('Supabase history fetch error:', e);
     }
