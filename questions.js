@@ -1079,6 +1079,48 @@ const QUESTION_BANK = [
   },
 
   // ================================================================
+  // suggest / recommend の干渉対策
+  //   7連続ミスの原因は「suggest that + 原形」の過学習。
+  //   2つの形が並列に存在することを、両方の形で出題して整理する。
+  // ================================================================
+  {
+    id: 'e038', part: 5, passageId: null, cat: 'gerund',
+    q: 'The consultant suggested ------- the launch until the supply chain stabilizes.',
+    choices: ['us to delay', 'delaying', 'to delay', 'delay'],
+    a: 1, exp: 'suggest は「人 + to do」を取れない。suggest us to delay は存在しない形。目的語が名詞句なら必ず -ing。'
+  },
+  {
+    id: 'e039', part: 5, passageId: null, cat: 'gerund',
+    q: 'The auditor recommended that the firm ------- its record-keeping procedures.',
+    choices: ['revising', 'revise', 'to revise', 'revises'],
+    a: 1, exp: 'こちらは that 節なので原形（仮定法現在）。e026 の recommend doing と対にして、2つの形を並べて覚える。'
+  },
+  {
+    id: 'e040', part: 5, passageId: null, cat: 'gerund',
+    q: 'Would you consider ------- the delivery date by one week?',
+    choices: ['to extend', 'extending', 'extend', 'us to extend'],
+    a: 1, exp: 'consider は -ing のみ。「検討する」は未来のことに思えるが形は動名詞。suggest / recommend と同じ扱いで覚える。'
+  },
+  {
+    id: 'e041', part: 5, passageId: null, cat: 'gerund',
+    q: 'The supplier admitted ------- the wrong invoice, and issued a corrected one.',
+    choices: ['to send', 'sending', 'send', 'to have send'],
+    a: 1, exp: 'admit / deny は「すでに起きたこと」なので -ing。意味で考えれば取れる型。'
+  },
+  {
+    id: 'e042', part: 5, passageId: null, cat: 'gerund',
+    q: 'The residents are opposed to ------- the parking fee this year.',
+    choices: ['raise', 'raising', 'be raised', 'have raised'],
+    a: 1, exp: 'be opposed to の to は前置詞。判別法: 後ろに it を置けるか（be opposed to it ○）。置けるなら -ing。'
+  },
+  {
+    id: 'e043', part: 5, passageId: null, cat: 'gerund',
+    q: 'The department manager offered ------- the training session on short notice.',
+    choices: ['leading', 'to lead', 'lead', 'led'],
+    a: 1, exp: 'offer は「これからする意志」なので to不定詞。it テストでも offer to it とは言えず、不定詞と分かる。'
+  },
+
+  // ================================================================
   // PART 2 応答問題（リスニング）
   //   q       : 読み上げられる問いかけ（画面には解答後まで出さない）
   //   choices : 応答3つ（Part 2 は本番も3択）
