@@ -624,7 +624,7 @@ const QUESTION_BANK = [
     id: 'e007', part: 5, passageId: null, cat: 'gerund',
     q: 'After reviewing the contract, the legal department suggested ------- the confidentiality clause entirely.',
     choices: ['to rewrite', 'rewriting', 'rewrite', 'rewritten'],
-    a: 1, exp: 'suggest は動名詞を目的語に取り、to不定詞は取らない。avoid / consider / recommend も同じ仲間。'
+    a: 1, exp: '仮定法現在の drill で覚えた「suggest that + 原形」が邪魔をしている型。suggest には2つの形しかない: (1) suggest doing (2) suggest that S (should) 原形。目的語が名詞句なら必ず -ing で、to不定詞は存在しない。recommend も同じ。'
   },
   {
     id: 'e008', part: 5, passageId: null, cat: 'gerund',
@@ -1009,7 +1009,7 @@ const QUESTION_BANK = [
     id: 'e026', part: 5, passageId: null, cat: 'gerund',
     q: 'The safety officer recommended ------- the emergency exits twice a year.',
     choices: ['to inspect', 'inspecting', 'inspect', 'inspected'],
-    a: 1, exp: 'recommend は動名詞を取る。recommend to do とは言わない（recommend that 節 + 原形なら可）。'
+    a: 1, exp: 'recommend も suggest と同型で2つの形しかない: (1) recommend doing (2) recommend that S (should) 原形。recommend to do も recommend 人 to do も存在しない。'
   },
   {
     id: 'e027', part: 5, passageId: null, cat: 'gerund',
@@ -1045,7 +1045,7 @@ const QUESTION_BANK = [
     id: 'e032', part: 5, passageId: null, cat: 'gerund',
     q: 'Several employees suggested ------- the weekly meeting to Friday afternoon.',
     choices: ['to move', 'moving', 'move', 'moved'],
-    a: 1, exp: 'suggest は動名詞のみ。suggest to do は誤り。that節なら原形（仮定法現在）。'
+    a: 1, exp: '仮定法現在の drill で覚えた「suggest that + 原形」が邪魔をしている型。suggest には2つの形しかない: (1) suggest doing (2) suggest that S (should) 原形。目的語が名詞句なら必ず -ing で、to不定詞は存在しない。recommend も同じ。'
   },
   {
     id: 'e033', part: 5, passageId: null, cat: 'gerund',
