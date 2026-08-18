@@ -121,7 +121,7 @@ const VOCAB_BANK = [
   { id: "w108", term: "affect", pos: "verb", ja: "〜に影響する（動詞）", ex: "The strike may affect delivery schedules next week.", note: "effect は名詞「影響・効果」。動詞なら affect。" },
   { id: "w109", term: "adopt", pos: "verb", ja: "採用する", ex: "The board decided to adopt the new accounting system.", note: "adapt は「適応させる・改変する」。adopt はそのまま取り入れる。" },
   { id: "w110", term: "principal", pos: "adj", ja: "主要な", ex: "Our principal concern is meeting the delivery deadline.", note: "principle は名詞「原則」のみ。形容詞で使えるのは principal。" },
-  { id: "w111", term: "complement", pos: "verb", ja: "補完する", ex: "The new software complements our existing inventory system.", note: "compliment は「褒め言葉・褒める」。complete と同語源なのが complement。" },
+  { id: "w111", term: "complement", pos: "verb", ja: "補完する", ex: "This tool should complement our existing inventory system.", note: "compliment は「褒め言葉・褒める」。complete と同語源なのが complement。" },
   { id: "w112", term: "personnel", pos: "noun", ja: "人員・人事部", ex: "All personnel must attend the safety briefing on Monday.", note: "personal は「個人的な」。personnel は名詞で強勢は後ろ。" },
   { id: "w113", term: "economical", pos: "adj", ja: "割安な", ex: "This hybrid model is more economical than the previous version.", note: "economic は「経済の（分野）」。節約になる意味は economical。" },
   { id: "w114", term: "respective", pos: "adj", ja: "それぞれの", ex: "The managers returned to their respective offices after lunch.", note: "respectful は「敬意を払う」。" },

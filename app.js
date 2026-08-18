@@ -125,15 +125,11 @@ function saveData() {
 }
 
 /**
- * AI が生成した問題を localStorage から復元して QUESTION_BANK に合流させる
- * （QUESTION_BANK に push するだけではリロードで消えてしまうため）
- */
-/**
  * 語彙デッキから出題オブジェクトを組み立てて問題バンクに合流させる。
  *
- * 単語の意味を単体で覚えても TOEIC では点にならないため、term は塊で持ち、
- * 英→日（認識）と 日→英（産出）を交互に割り当てる。産出の方が定着が良い。
- * 誤答は同じデッキから決め打ちで選ぶ（毎回変えると SRS の難度が安定しないため）。
+ * 意味を選ばせる形式は正答率90%で負荷が足りなかったため、例文の一語を空所にした
+ * 穴埋めにしてある。実際に落ちているのは意味の認識ではなく文中での使い分けのため。
+ * 誤答は同じ品詞から決め打ちで選ぶ（毎回変えると SRS の難度が安定しないため）。
  */
 function buildVocabQuestions() {
   if (typeof VOCAB_BANK === 'undefined') return;
@@ -147,11 +143,21 @@ function buildVocabQuestions() {
   const byPos = {};
   VOCAB_BANK.forEach(w => { (byPos[w.pos || 'noun'] ||= []).push(w); });
 
-  // 抜く語は語句の先頭の内容語。語句をまるごと抜くと文脈が薄くなり
-  // 他の選択肢も入りうるが、1語だけなら残りが手がかりになって答えが定まる。
+  // 抜く語は「その語句を最も特徴づける語」。
+  // 単純に先頭語を抜くと in / at / on ばかりになり、前置詞句どうしで
+  // 選択肢が重複して4択が成立しなかった。デッキ全体での出現頻度が
+  // 低い語ほど特徴的とみなす。
+  const STOP = new Set(['a', 'an', 'the', 'of', 'to', 'be', 'your', 'my', 'our', 'is', 'are']);
+  const freq = {};
+  VOCAB_BANK.forEach(w => w.term.toLowerCase().split(' ').forEach(t => {
+    if (!STOP.has(t)) freq[t] = (freq[t] || 0) + 1;
+  }));
+
   const keyWord = term => {
-    const parts = term.split(' ');
-    return /^be$/i.test(parts[0]) && parts.length > 1 ? parts[1] : parts[0];
+    const parts = term.split(' ').filter(t => !STOP.has(t.toLowerCase()));
+    if (parts.length === 0) return term.split(' ')[0];
+    return parts.reduce((best, t) =>
+      (freq[t.toLowerCase()] || 0) < (freq[best.toLowerCase()] || 0) ? t : best);
   };
 
   const blankKeyWord = (sentence, term) => {
@@ -167,13 +173,20 @@ function buildVocabQuestions() {
     const made = blankKeyWord(w.ex, w.term);
     if (!made) return;
 
-    // 同じ品詞の語句から誤答を決定的に選ぶ（毎回変えると難度が安定しない）
+    // 同じ品詞の語句から誤答を決定的に選ぶ（毎回変えると難度が安定しない）。
+    // 同じ抜き語が当たると4択にならないので、重複しないものを順に拾う。
     const same = (byPos[w.pos || 'noun'] || []).filter(x => x.id !== w.id);
-    const pool = same.length >= 3 ? same : VOCAB_BANK.filter(x => x.id !== w.id);
-    const others = [1, 2, 3].map(k => pool[(i * 3 + k * 5) % pool.length]);
+    const pool = (same.length >= 3 ? same : VOCAB_BANK.filter(x => x.id !== w.id));
     const cloze = made.cloze;
-    const choices = [made.word, ...others.map(x => keyWord(x.term))];
-    if (new Set(choices.map(c => c.toLowerCase())).size !== 4) return;
+    const choices = [made.word];
+    const used = new Set([made.word.toLowerCase()]);
+    for (let k = 0; k < pool.length && choices.length < 4; k++) {
+      const cand = keyWord(pool[(i * 3 + k * 5) % pool.length].term);
+      if (used.has(cand.toLowerCase())) continue;
+      used.add(cand.toLowerCase());
+      choices.push(cand);
+    }
+    if (choices.length !== 4) return;
 
     const explanation = `${w.term} = ${w.ja}\n例: ${w.ex}${w.note ? '\n' + w.note : ''}`;
 
@@ -191,6 +204,10 @@ function buildVocabQuestions() {
   });
 }
 
+/**
+ * AI が生成した問題を localStorage から復元して QUESTION_BANK に合流させる
+ * （QUESTION_BANK に push するだけではリロードで消えてしまうため）
+ */
 function loadGeneratedQuestions() {
   let saved = [];
   try {
